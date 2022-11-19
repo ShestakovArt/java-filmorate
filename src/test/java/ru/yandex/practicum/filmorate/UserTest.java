@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate;
 
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -14,9 +16,10 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@FieldDefaults(level= AccessLevel.PRIVATE)
 public class UserTest {
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    private Validator validator = factory.getValidator();
+    Validator validator = factory.getValidator();
 
     @Test
     public void correctlyCreatedUserTest(){

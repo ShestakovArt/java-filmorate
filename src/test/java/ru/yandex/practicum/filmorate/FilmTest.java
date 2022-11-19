@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -12,16 +14,18 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@FieldDefaults(level= AccessLevel.PRIVATE)
 public class FilmTest {
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    private Validator validator = factory.getValidator();
+    Validator validator = factory.getValidator();
+    String description = "Немецкий кинофильм 1997 года режиссёра Томаса Яна о двух мужчинах, " +
+            "которым ставят смертельный диагноз, " +
+            "в результате чего они угоняют машину с миллионом немецких марок в багажнике и покидают больницу.";
 
     @Test
     public void correctlyCreatedFilmTest(){
         Film film = new Film("Достучатся до небес",
-                "Немецкий кинофильм 1997 года режиссёра Томаса Яна " +
-                "о двух мужчинах, которым ставят смертельный диагноз, " +
-                "в результате чего они угоняют машину с миллионом немецких марок в багажнике и покидают больницу.",
+                description,
                 "1997-02-20",
                 87);
         film.setId(1);
@@ -32,9 +36,7 @@ public class FilmTest {
     @Test
     public void emptyNameFilmTest(){
         Film film = new Film("",
-                "Немецкий кинофильм 1997 года режиссёра Томаса Яна " +
-                        "о двух мужчинах, которым ставят смертельный диагноз, " +
-                        "в результате чего они угоняют машину с миллионом немецких марок в багажнике и покидают больницу.",
+                description,
                 "1997-02-20",
                 87);
         film.setId(1);
@@ -48,10 +50,7 @@ public class FilmTest {
     @Test
     public void sizeDescriptionFilmMore200SymbolTest(){
         Film film = new Film("Достучатся до небес",
-                "Немецкий кинофильм 1997 года режиссёра Томаса Яна " +
-                        "о двух мужчинах, которым ставят смертельный диагноз, " +
-                        "в результате чего они угоняют машину с миллионом немецких марок в багажнике и покидают больницу." +
-                        "Увеличим описание до значения более 200 символов",
+                description + "Увеличим описание до значения более 200 символов",
                 "1997-02-20",
                 87);
         film.setId(1);
@@ -65,9 +64,7 @@ public class FilmTest {
     @Test
     public void releaseDateIsBeforeDateOfReleaseDateFirstFilmToWorldTest(){
         Film film = new Film("Достучатся до небес",
-                "Немецкий кинофильм 1997 года режиссёра Томаса Яна " +
-                        "о двух мужчинах, которым ставят смертельный диагноз, " +
-                        "в результате чего они угоняют машину с миллионом немецких марок в багажнике и покидают больницу.",
+                description,
                 "1895-12-26",
                 87);
         film.setId(1);
@@ -81,9 +78,7 @@ public class FilmTest {
     @Test
     public void durationIsNegativeTest(){
         Film film = new Film("Достучатся до небес",
-                "Немецкий кинофильм 1997 года режиссёра Томаса Яна " +
-                        "о двух мужчинах, которым ставят смертельный диагноз, " +
-                        "в результате чего они угоняют машину с миллионом немецких марок в багажнике и покидают больницу.",
+                description,
                 "1997-02-20",
                 -1);
         film.setId(1);

@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.validator.BirthdayValid;
 
 import javax.validation.constraints.Email;
@@ -12,16 +14,17 @@ import java.time.LocalDate;
 
 @Data
 @BirthdayValid
+@FieldDefaults(level= AccessLevel.PRIVATE)
 public class User {
-    private int id;
+    int id;
     @NotBlank(message = "Электронная почта не может быть пустой")
     @Email(message = "Электронная почта должна содержать символ @")
-    private String email;
+    String email;
     @NotEmpty(message = "Логин не может быть пустым и содержать пробелы")
     @NotBlank(message = "Логин не может быть пустым и содержать пробелы")
-    private String login;
-    private String name;
-    private String birthday;
+    String login;
+    String name;
+    String birthday;
 
     public User(String email, String login, String name, String birthday) {
         this.email = email;
@@ -32,5 +35,13 @@ public class User {
             this.name = name;
         }
         this.birthday = birthday;
+    }
+
+    public void setName(String name) {
+        if(name == null || name.isEmpty() || name.isBlank()){
+            this.name = login;
+        } else{
+            this.name = name;
+        }
     }
 }
