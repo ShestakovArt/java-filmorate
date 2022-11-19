@@ -26,7 +26,7 @@ public class User {
     public User(String email, String login, String name, String birthday) {
         this.email = email;
         this.login = login;
-        if(name == null){
+        if(name == null || name.isEmpty() || name.isBlank()){
             this.name = login;
         } else{
             this.name = name;

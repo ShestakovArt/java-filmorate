@@ -44,13 +44,11 @@ public class UserController {
 
     @PutMapping()
     public ResponseEntity<User> update(@Valid @RequestBody @NotNull User user){
+        ResponseEntity<User> tResponseEntity = new ResponseEntity<>(user, HttpStatus.NOT_FOUND);;
         if(users.containsKey(user.getId())){
             users.put(user.getId(), user);
-            ResponseEntity<User> tResponseEntity = new ResponseEntity<>(user, HttpStatus.OK);
-            return tResponseEntity;
-        }else{
-            ResponseEntity<User> tResponseEntity = new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
-            return tResponseEntity;
+            tResponseEntity = new ResponseEntity<>(user, HttpStatus.OK);
         }
+        return tResponseEntity;
     }
 }

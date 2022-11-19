@@ -40,13 +40,11 @@ public class FilmController {
 
     @PutMapping()
     public ResponseEntity<Film> update(@Valid @RequestBody @NotNull Film film){
+        ResponseEntity<Film> tResponseEntity = new ResponseEntity<>(film, HttpStatus.NOT_FOUND);;
         if(films.containsKey(film.getId())){
             films.put(film.getId(), film);
-            ResponseEntity<Film> tResponseEntity = new ResponseEntity<>(film, HttpStatus.OK);
-            return tResponseEntity;
-        }else{
-            ResponseEntity<Film> tResponseEntity = new ResponseEntity<>(film, HttpStatus.NOT_FOUND);
-            return tResponseEntity;
+            tResponseEntity = new ResponseEntity<>(film, HttpStatus.OK);
         }
+        return tResponseEntity;
     }
 }
