@@ -2,12 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
@@ -39,36 +41,40 @@ public class FilmService {
     }
 
     public void addLikeFilm(Integer filmId, Integer userId){
-        if (filmId > 0 && userId > 0 && !filmStorage.getFilms().get(filmId).getLikes().contains(userId)){
+        if(filmId < 1){
+            throw new FilmNotFoundException("Id фильма должно быть больше 0");
+        }
+        if(userId < 1){
+            throw new UserNotFoundException("Id пользователя должно быть больше 0");
+        }
+        if (!filmStorage.getFilms().get(filmId).getLikes().contains(userId)){
             filmStorage.getFilms().get(filmId).addLike(userId);
         }
     }
 
     public void deleteLikeFilm(Integer filmId, Integer userId){
-        if (filmId > 0 && userId > 0){
-            filmStorage.getFilms().get(filmId).deleteLike(userId);
+        if(filmId < 1){
+            throw new FilmNotFoundException("Id фильма должно быть больше 0");
         }
+        if(userId < 1){
+            throw new UserNotFoundException("Id пользователя должно быть больше 0");
+        }
+        filmStorage.getFilms().get(filmId).deleteLike(userId);
     }
 
-    public LinkedList<Film> getMostPopularMoviesOfLikes(Integer count){
+    public List<Film> getMostPopularMoviesOfLikes(Integer count){
+        if(count < 1){
+            throw new IncorrectParameterException("Значение count должно быть больше 0");
+        }
         Comparator<Film> filmComparator = (film1, film2) -> {
             if(film2.getRate().compareTo(film1.getRate()) == 0){
                 return film1.getName().compareTo(film2.getName());
             }
             return film2.getRate().compareTo(film1.getRate());
         };
-        LinkedList<Film> filmLinkedList = new LinkedList<>();
-        List<Film> filmList = new ArrayList<>(getFilmsList());
-        filmList.sort(filmComparator);
-        System.out.println(filmList);
-        for (Film film : filmList){
-            if(filmLinkedList.size() < count){
-                filmLinkedList.add(film);
-            }
-            else{
-                break;
-            }
-        }
-        return filmLinkedList;
+        return getFilmsList().stream()
+                .sorted(filmComparator)
+                .limit(count)
+                .collect(Collectors.toList());
     }
 }

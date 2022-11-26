@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -41,22 +42,27 @@ public class UserService {
     }
 
     public void addFriend(Integer idUser, Integer idFriend){
-        if(idUser > 0 && idFriend > 0){
-            userStorage.getUsers().get(idUser).addFriend(idFriend);
-            userStorage.getUsers().get(Math.toIntExact(idFriend)).addFriend(idUser);
+        if(idUser < 1 || idFriend < 1){
+            throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
+        userStorage.getUsers().get(idUser).addFriend(idFriend);
+        userStorage.getUsers().get(Math.toIntExact(idFriend)).addFriend(idUser);
     }
 
     public void deleteFriend(Integer idUser, Integer idFriend){
-        if(idUser > 0 && idFriend > 0){
-            userStorage.getUsers().get(idUser).deleteFriend(idFriend);
-            userStorage.getUsers().get(Math.toIntExact(idFriend)).deleteFriend(idUser);
+        if(idUser < 1 || idFriend < 1){
+            throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
+        userStorage.getUsers().get(idUser).deleteFriend(idFriend);
+        userStorage.getUsers().get(Math.toIntExact(idFriend)).deleteFriend(idUser);
     }
 
-    public List<User> getUserFriends(Integer userId){
+    public List<User> getUserFriends(Integer idUser){
+        if(idUser < 1){
+            throw new UserNotFoundException("Id пользователя должно быть больше 0");
+        }
         List<User> friends = new ArrayList<>();
-        for (Integer friendId : userStorage.getUsers().get(userId).getFriends()){
+        for (Integer friendId : userStorage.getUsers().get(idUser).getFriends()){
             if(userStorage.getUsers().containsKey(friendId)){
                 friends.add(userStorage.getUsers().get(friendId));
             }
@@ -65,12 +71,13 @@ public class UserService {
     }
 
     public List<User> getCommonFriend(Integer idUser, Integer idFriend){
+        if(idUser < 1 || idFriend < 1){
+            throw new UserNotFoundException("Id пользователя должно быть больше 0");
+        }
         List<User> commonFriend = new ArrayList<>();
-        if(idUser > 0 && idFriend > 0){
-            for(Integer idFriendUser : userStorage.getUsers().get(idUser).getFriends()){
-                if(userStorage.getUsers().get(idFriend).getFriends().contains(idFriendUser)){
-                    commonFriend.add(userStorage.getUsers().get(idFriendUser));
-                }
+        for(Integer idFriendUser : userStorage.getUsers().get(idUser).getFriends()){
+            if(userStorage.getUsers().get(idFriend).getFriends().contains(idFriendUser)){
+                commonFriend.add(userStorage.getUsers().get(idFriendUser));
             }
         }
         return commonFriend;

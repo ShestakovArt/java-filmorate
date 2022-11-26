@@ -41,16 +41,12 @@ public class Film{
     }
 
     public void addLike(Integer idUser){
-        if (idUser > 0){
-            likes.add(idUser);
-            this.rate = rate + likes.size();
-        }
+        likes.add(idUser);
+        this.rate = rate + likes.size();
     }
 
     public void deleteLike(Integer idUser){
-        if (idUser > 0){
-            this.rate = rate - likes.size();
-            likes.remove(idUser);
-        }
+        this.rate = rate - likes.size();
+        likes.remove(idUser);
     }
 }
