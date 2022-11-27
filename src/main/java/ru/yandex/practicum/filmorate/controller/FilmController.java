@@ -20,6 +20,8 @@ import java.util.*;
 @RequestMapping("/films")
 public class FilmController {
     final FilmService filmService;
+    final String pathId = "/{id}";
+    final String pathLikeFilm = pathId + "/like/{userId}";
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -45,7 +47,7 @@ public class FilmController {
         return new ResponseEntity<>(film, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(pathId)
     public ResponseEntity<Film> getFilm(@PathVariable int id){
         if(!filmService.getFilms().containsKey(id)){
             throw new FilmNotFoundException("Нет фильма с таким ID");
@@ -61,7 +63,7 @@ public class FilmController {
         return filmService.getMostPopularMoviesOfLikes(count);
     }
 
-    @PutMapping("/{id}/like/{userId}")
+    @PutMapping(pathLikeFilm)
     public ResponseEntity<Film> putLikeFilm(@PathVariable Integer id, @PathVariable Integer userId){
         if(!filmService.getFilms().containsKey(id)){
             throw new FilmNotFoundException("Нет фильма с таким ID");
@@ -70,7 +72,7 @@ public class FilmController {
         return new ResponseEntity<>(filmService.getFilms().get(id), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
+    @DeleteMapping(pathLikeFilm)
     public ResponseEntity<Film> deleteLikeFilm(@PathVariable Integer id, @PathVariable Integer userId){
         if(!filmService.getFilms().containsKey(id)){
             throw new FilmNotFoundException("Нет фильма с таким ID");
