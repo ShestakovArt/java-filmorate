@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = ReleaseDateValidator.class)
 public @interface ReleaseDateValid {
-    String message() default "error person data";
+    String message() default "Не правильная дата релиза";
 
     Class<?>[] groups() default {};
 
