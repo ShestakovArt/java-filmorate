@@ -12,11 +12,11 @@ Template repository for Filmorate project.
 Пример:
 ```sql
 SELECT u.Name,
-f.Name
+    f.Name
 FROM Users AS u
 LEFT OUTER JOIN UsersMovieLibrary AS mv
-ON mv.FilmID = u.UserID
+    ON mv.FilmID = u.UserID
 LEFT OUTER JOIN Films AS f
-ON f.FilmID = mv.FilmID
+    ON f.FilmID = mv.FilmID
 WHERE u.UserID = 'ID user'
 ```
