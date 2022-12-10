@@ -27,7 +27,7 @@ public class FilmTest {
         Film film = new Film("Достучатся до небес",
                 description,
                 "1997-02-20",
-                87);
+                87, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertTrue(violations.isEmpty(), "Объект film создан не корректно");
@@ -38,7 +38,7 @@ public class FilmTest {
         Film film = new Film("",
                 description,
                 "1997-02-20",
-                87);
+                87, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         for (ConstraintViolation<Film> filmConstraintViolation : violations){
@@ -52,7 +52,7 @@ public class FilmTest {
         Film film = new Film("Достучатся до небес",
                 description + "Увеличим описание до значения более 200 символов",
                 "1997-02-20",
-                87);
+                87, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         for (ConstraintViolation<Film> filmConstraintViolation : violations){
@@ -66,7 +66,7 @@ public class FilmTest {
         Film film = new Film("Достучатся до небес",
                 description,
                 "1895-12-26",
-                87);
+                87, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         for (ConstraintViolation<Film> filmConstraintViolation : violations){
@@ -80,7 +80,7 @@ public class FilmTest {
         Film film = new Film("Достучатся до небес",
                 description,
                 "1997-02-20",
-                -1);
+                -1, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         for (ConstraintViolation<Film> filmConstraintViolation : violations){
