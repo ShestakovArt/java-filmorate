@@ -1,3 +1,3 @@
 # java-filmorate
 Template repository for Filmorate project.
-![This is an image](resources/ER_scheme.svg)
+<img src="resources/ER_scheme.svg" width=100% height=100%>
