@@ -8,6 +8,7 @@ Template repository for Filmorate project.
 + **FilmToGenre** - отслеживает принодлежность фильма к жанрам
 + **Genre** - список жанров
 + **MPA** - рейтинг Ассоциации кинокомпаний и описание
+
 Пример:
 ```sql
 SELECT u.Name,
