@@ -40,7 +40,13 @@ public class UserController {
 
     @PutMapping()
     public ResponseEntity<User> update(@Valid @RequestBody @NotNull User user){
-        if(!userService.getUsers().containsKey(user.getId())){
+        boolean findFlag = false;
+        for (User equredUser : userService.getUsersList()){
+            if(equredUser.getId() == user.getId()){
+                findFlag = true;
+            }
+        }
+        if(!findFlag){
             throw new UserNotFoundException("Нет пользователя с таким ID");
         }
         userService.upgradeUser(user);
@@ -49,24 +55,24 @@ public class UserController {
 
     @GetMapping(pathId)
     public ResponseEntity<User> getUser(@PathVariable int id){
-        if(!userService.getUsers().containsKey(id)){
+        if(!userService.getUsersList().contains(id)){
             throw new UserNotFoundException("Нет пользователя с таким ID");
         }
-        return new ResponseEntity<>(userService.getUsers().get(id), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
     }
 
     @PutMapping(pathIdFriend)
     public ResponseEntity<User> putUserFriend(@PathVariable Integer id, @PathVariable Integer friendId){
-        if(!userService.getUsers().containsKey(id) || !userService.getUsers().containsKey(friendId)){
+        if(!userService.getUsersList().contains(id) || !userService.getUsersList().contains(friendId)){
             throw new UserNotFoundException("Нет пользователя с таким ID");
         }
         userService.addFriend(id, friendId);
-        return new ResponseEntity<>(userService.getUsers().get(id), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
     }
 
     @DeleteMapping(pathIdFriend)
     public ResponseEntity<User> deleteUserFriend(@PathVariable Integer id, @PathVariable Integer friendId){
-        if(!userService.getUsers().containsKey(id) || !userService.getUsers().containsKey(friendId)){
+        if(!userService.getUsersList().contains(id) || !userService.getUsersList().contains(friendId)){
             throw new UserNotFoundException("Нет пользователя с таким ID");
         }
         userService.deleteFriend(id, friendId);
@@ -75,7 +81,7 @@ public class UserController {
 
     @GetMapping(pathFriends)
     public ResponseEntity<List<User>> getUserFriends(@PathVariable Integer id){
-        if(!userService.getUsers().containsKey(id)){
+        if(!userService.getUsersList().contains(id)){
             throw new UserNotFoundException("Нет пользователя с таким ID");
         }
         return new ResponseEntity<>(userService.getUserFriends(id), HttpStatus.OK);
@@ -83,7 +89,7 @@ public class UserController {
 
     @GetMapping(pathFriends + "/common/{otherId}")
     public ResponseEntity<List<User>> getCommonUsersFriends(@PathVariable Integer id, @PathVariable Integer otherId){
-        if(!userService.getUsers().containsKey(id) || !userService.getUsers().containsKey(otherId)){
+        if(!userService.getUsersList().contains(id) || !userService.getUsersList().contains(otherId)){
             throw new UserNotFoundException("Нет пользователя с таким ID");
         }
         return new ResponseEntity<>(userService.getCommonFriend(id, otherId), HttpStatus.OK);

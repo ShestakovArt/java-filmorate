@@ -7,7 +7,9 @@ import ru.yandex.practicum.filmorate.validator.BirthdayValid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -46,5 +48,14 @@ public class User {
         if (idFriend > 0){
             friends.remove(idFriend);
         }
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("USER_EMAIL", email);
+        values.put("USER_LOGIN", login);
+        values.put("USER_NAME", name);
+        values.put("USER_BIRTHDAY", birthday);
+        return values;
     }
 }

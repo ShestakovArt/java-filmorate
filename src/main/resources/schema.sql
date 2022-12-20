@@ -59,18 +59,18 @@ create table FILM_TO_GENRE
         foreign key (GENRE_ID) references GENRE
 );
 create table USER_MOVIE_LIBRARY(
-                                   USER_ID    INTEGER               not null,
-                                   FILM_ID    INTEGER               not null,
-                                   constraint USER_MOVIE_LIBRARY_USERS_ID_FK
-                                       foreign key (USER_ID) references USERS (USER_ID),
-                                   constraint USER_MOVIE_LIBRARY_FILMS_ID_FK
-                                       foreign key (FILM_ID) references FILMS (FILM_ID)
+    USER_ID    INTEGER               not null,
+    FILM_ID    INTEGER               not null,
+    constraint USER_MOVIE_LIBRARY_USERS_ID_FK
+        foreign key (USER_ID) references USERS (USER_ID),
+    constraint USER_MOVIE_LIBRARY_FILMS_ID_FK
+        foreign key (FILM_ID) references FILMS (FILM_ID)
 );
 create table USER_LIKE_MOVIE(
-                                USER_ID    INTEGER               not null,
-                                FILM_ID    INTEGER               not null,
-                                constraint USER_LIKE_MOVIE_USERS_ID_FK
-                                    foreign key (USER_ID) references USERS (USER_ID),
-                                constraint USER_LIKE_MOVIE_FILMS_ID_FK
-                                    foreign key (FILM_ID) references FILMS (FILM_ID)
+    USER_ID    INTEGER               not null,
+    FILM_ID    INTEGER               not null,
+    constraint USER_LIKE_MOVIE_USERS_ID_FK
+        foreign key (USER_ID) references USERS (USER_ID),
+    constraint USER_LIKE_MOVIE_FILMS_ID_FK
+        foreign key (FILM_ID) references FILMS (FILM_ID)
 );
