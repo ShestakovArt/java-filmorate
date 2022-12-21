@@ -2,10 +2,13 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -55,19 +58,30 @@ public class UserController {
 
     @GetMapping(pathId)
     public ResponseEntity<User> getUser(@PathVariable int id){
-        if(!userService.getUsersList().contains(id)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
+        ResponseEntity response;
+        try {
+            response = new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
         }
-        return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
+        catch (UserNotFoundException | EmptyResultDataAccessException e){
+            response = new ResponseEntity<>("Нет пользователя с таким ID", HttpStatus.NOT_FOUND);
+        }
+        return response;
     }
 
     @PutMapping(pathIdFriend)
     public ResponseEntity<User> putUserFriend(@PathVariable Integer id, @PathVariable Integer friendId){
-        if(!userService.getUsersList().contains(id) || !userService.getUsersList().contains(friendId)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
+        ResponseEntity response;
+        try {
+            if(userService.addFriend(id, friendId)) {
+                response = new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
+            } else {
+                throw new ValidationException("Не удалось добавить пользователя в друзья");
+            }
         }
-        userService.addFriend(id, friendId);
-        return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
+        catch (UserNotFoundException | ValidationException | EmptyResultDataAccessException e){
+            response = new ResponseEntity<>(userService.getUser(id), HttpStatus.NOT_FOUND);
+        }
+        return response;
     }
 
     @DeleteMapping(pathIdFriend)
@@ -81,10 +95,15 @@ public class UserController {
 
     @GetMapping(pathFriends)
     public ResponseEntity<List<User>> getUserFriends(@PathVariable Integer id){
-        if(!userService.getUsersList().contains(id)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
+        ResponseEntity response;
+        try {
+            userService.getUser(id);
+            response = new ResponseEntity<>(userService.getUserFriends(id), HttpStatus.OK);
         }
-        return new ResponseEntity<>(userService.getUserFriends(id), HttpStatus.OK);
+        catch (UserNotFoundException | ValidationException | EmptyResultDataAccessException e){
+            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return response;
     }
 
     @GetMapping(pathFriends + "/common/{otherId}")
