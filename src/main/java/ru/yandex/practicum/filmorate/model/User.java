@@ -25,7 +25,6 @@ public class User {
     String login;
     String name;
     String birthday;
-    Set<Integer> friends = new HashSet<>();
 
     public User(String email, String login, String name, String birthday) {
         this.email = email;
@@ -36,18 +35,6 @@ public class User {
             this.name = name;
         }
         this.birthday = birthday;
-    }
-
-    public void addFriend(Integer idFriend){
-        if (idFriend > 0){
-            friends.add(idFriend);
-        }
-    }
-
-    public void deleteFriend(Integer idFriend){
-        if (idFriend > 0){
-            friends.remove(idFriend);
-        }
     }
 
     public Map<String, Object> toMap() {

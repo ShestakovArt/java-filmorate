@@ -7,6 +7,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -86,11 +87,20 @@ public class UserController {
 
     @DeleteMapping(pathIdFriend)
     public ResponseEntity<User> deleteUserFriend(@PathVariable Integer id, @PathVariable Integer friendId){
-        if(!userService.getUsersList().contains(id) || !userService.getUsersList().contains(friendId)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
+        ResponseEntity response;
+        try {
+            userService.getUser(id);
+            userService.getUser(friendId);
+            userService.deleteFriend(id, friendId);
+            response = new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        userService.deleteFriend(id, friendId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        catch (UserNotFoundException |
+               ValidationException |
+               IncorrectParameterException |
+               EmptyResultDataAccessException e){
+            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return response;
     }
 
     @GetMapping(pathFriends)
@@ -108,9 +118,15 @@ public class UserController {
 
     @GetMapping(pathFriends + "/common/{otherId}")
     public ResponseEntity<List<User>> getCommonUsersFriends(@PathVariable Integer id, @PathVariable Integer otherId){
-        if(!userService.getUsersList().contains(id) || !userService.getUsersList().contains(otherId)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
+        ResponseEntity response;
+        try {
+            userService.getUser(id);
+            userService.getUser(otherId);
+            response = new ResponseEntity<>(userService.getCommonFriend(id, otherId), HttpStatus.OK);
         }
-        return new ResponseEntity<>(userService.getCommonFriend(id, otherId), HttpStatus.OK);
+        catch (UserNotFoundException | ValidationException | EmptyResultDataAccessException e){
+            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return response;
     }
 }

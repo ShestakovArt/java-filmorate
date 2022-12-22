@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
+import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
@@ -13,31 +15,32 @@ import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
-    FilmStorage filmStorage;
+    FilmDbStorage filmDbStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
+    public FilmService(FilmDbStorageImpl filmDbStorage) {
+        this.filmDbStorage = filmDbStorage;
     }
 
     public HashMap<Integer, Film> getFilms() {
-        return filmStorage.getFilms();
+        return null/*filmDbStorage.getFilms()*/;
     }
 
     public Film addFilm(Film film) {
-        return filmStorage.addFilm(film);
+        film.setId(filmDbStorage.addFilm(film));
+        return film;
     }
 
     public void deleteFilm(Integer id) {
-        filmStorage.deleteFilm(id);
+        filmDbStorage.deleteFilm(id);
     }
 
     public void upgradeFilm(Film film) {
-        filmStorage.upgradeFilm(film);
+        filmDbStorage.upgradeFilm(film);
     }
 
     public Collection<Film> getFilmsList(){
-        return filmStorage.getFilms().values();
+        return null/*filmDbStorage.getFilms().values()*/;
     }
 
     public void addLikeFilm(Integer filmId, Integer userId){
@@ -47,9 +50,9 @@ public class FilmService {
         if(userId < 1){
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
-        if (!filmStorage.getFilms().get(filmId).getLikes().contains(userId)){
-            filmStorage.getFilms().get(filmId).addLike(userId);
-        }
+//        if (!filmDbStorage.getFilms().get(filmId).getLikes().contains(userId)){
+//            filmDbStorage.getFilms().get(filmId).addLike(userId);
+//        }
     }
 
     public void deleteLikeFilm(Integer filmId, Integer userId){
@@ -59,7 +62,7 @@ public class FilmService {
         if(userId < 1){
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
-        filmStorage.getFilms().get(filmId).deleteLike(userId);
+        //filmDbStorage.getFilms().get(filmId).deleteLike(userId);
     }
 
     public List<Film> getMostPopularMoviesOfLikes(Integer count){

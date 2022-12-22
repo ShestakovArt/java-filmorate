@@ -6,8 +6,8 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.UserDbStorageImpl;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 
@@ -24,7 +24,6 @@ public class UserService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-
     private Collection<User> getUsers() {
         return userDbStorage.findAll();
     }
@@ -32,10 +31,6 @@ public class UserService {
     public User addUser(User user) {
         user.setId(userDbStorage.addUser(user));
         return user;
-    }
-
-    public void deleteUser(Integer id) {
-        userDbStorage.deleteUser(id);
     }
 
     public void upgradeUser(User user) {
@@ -60,10 +55,9 @@ public class UserService {
         if(idUser < 1 || idFriend < 1){
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
-        User user = getUser(idUser);
-        User friend = getUser(idFriend);
-        user.deleteFriend(idFriend);
-        friend.deleteFriend(idUser);
+        if(!deleteFriends(idUser, idFriend)){
+            throw new IncorrectParameterException("Не удалось удалить пользователя из друзей");
+        }
     }
 
     public List<User> getUserFriends(Integer idUser){
@@ -83,10 +77,10 @@ public class UserService {
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
         List<User> commonFriend = new ArrayList<>();
-        for(Integer idFriendUser : getUser(idUser).getFriends()){
-            if(getUser(idFriend).getFriends().contains(idFriendUser)){
-                commonFriend.add(getUser(idFriendUser));
-            }
+        Set<Integer> common = new HashSet<>(findAllFriends(idUser));
+        common.retainAll(findAllFriends(idFriend));
+        for(Integer idFriendUser : common){
+            commonFriend.add(getUser(idFriendUser));
         }
         return commonFriend;
     }
@@ -117,13 +111,17 @@ public class UserService {
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 
-    public List<Integer> findAllFriends(Integer idUser) {
-        String sqlQuery = String.format("select SENDER_ID as friends\n" +
-                "from FRIENDSHIP_REQUESTS\n" +
-                "where RECIPIENT_ID = %d\n" +
-                "UNION select RECIPIENT_ID as friends\n" +
+    private List<Integer> findAllFriends(Integer idUser) {
+        String sqlQuery = String.format("select RECIPIENT_ID as friends\n" +
                 "from FRIENDSHIP_REQUESTS\n" +
                 "where SENDER_ID = %d", idUser, idUser);
         return jdbcTemplate.queryForList(sqlQuery, Integer.class);
+    }
+
+    private boolean deleteFriends(Integer idUser, Integer idFriend) {
+        String sqlQuery = String.format("delete\n" +
+                "from FRIENDSHIP_REQUESTS\n" +
+                "where SENDER_ID = %d and RECIPIENT_ID = %d", idUser, idFriend);
+        return jdbcTemplate.update(sqlQuery) > 0;
     }
 }
