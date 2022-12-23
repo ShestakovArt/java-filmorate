@@ -5,6 +5,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.GenreService;
@@ -70,24 +72,59 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public void setGenreFilm(Integer idFilm, Integer idGenre){
+    public boolean setGenreFilm(Integer idFilm, Integer idGenre){
         if(!findGenreToFilm(idFilm, idGenre)){
-            HashMap<String, Integer> map = new HashMap<>();
-            map.put("FILM_ID", idFilm);
-            map.put("GENRE_ID", idGenre);
-            new SimpleJdbcInsert(jdbcTemplate)
-                    .withTableName("FILM_TO_GENRE")
-                    .usingColumns("FILM_ID", "GENRE_ID");
+            String sqlQuery = String.format("INSERT INTO FILM_TO_GENRE VALUES (%d, %d)", idFilm, idGenre);
+            return jdbcTemplate.update(sqlQuery) == 1;
         }
+        return false;
     }
 
-    private boolean findGenreToFilm(Integer idFilm, Integer idGenre) {
-        String sqlQuery = String.format("select COUNT(*)\n" +
-                "from FILM_TO_GENRE\n" +
-                "where FILM_ID = %d and GENRE_ID = %d", idFilm, idGenre);
-        return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
+    @Override
+    public boolean deleteGenreFilm(Integer idFilm, Integer idGenre){
+        if(findGenreToFilm(idFilm, idGenre)){
+            String sqlQuery = "delete from FILM_TO_GENRE where FILM_ID = ? AND GENRE_ID = ?";
+            return jdbcTemplate.update(sqlQuery, idFilm, idGenre) > 0;
+        }
+        return false;
     }
-    private List<Genre> getGenresFilm(Integer filmId){
+
+    @Override
+    public boolean addLikeFilm(Integer idFilm, Integer idUser){
+        if(!findLikeUserToFilm(idFilm, idUser)){
+            String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", idFilm, idUser);
+            return jdbcTemplate.update(sqlQuery) == 1;
+        }
+        return false;
+    }
+
+    @Override
+    public List<Film> listMostPopularFilms(int limit){
+        List<Film> mostPopularFilms = new ArrayList<>();
+        String sqlQuery = String.format("SELECT FILM_ID\n" +
+                "    FROM (SELECT FILM_ID, COUNT(*) FROM USER_LIKE_FILM GROUP BY FILM_ID LIMIT %d)", limit);
+        List<Integer> listIdFilms = jdbcTemplate.queryForList(sqlQuery, Integer.class);
+        if(listIdFilms.size() < 1){
+            throw new ValidationException("Список популярных фильмов пуст");
+        }
+        for(Integer id : listIdFilms){
+            mostPopularFilms.add(findFilm(id)
+                    .orElseThrow(() ->new FilmNotFoundException("Фильм с идентификатором " + id + " не найден.")));
+        }
+        return mostPopularFilms;
+    }
+
+    @Override
+    public boolean deleteLike(Integer idFilm, Integer idUser) {
+        if(!findLikeUserToFilm(idFilm, idUser)){
+            String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
+            return jdbcTemplate.update(sqlQuery, idFilm, idUser) > 0;
+        }
+        return false;
+    }
+
+    @Override
+    public List<Genre> getGenresFilm(Integer filmId){
         String sqlQuery = String.format("select GENRE_ID\n" +
                 "from FILM_TO_GENRE\n" +
                 "where FILM_ID = %d", filmId);
@@ -97,6 +134,20 @@ public class FilmDbStorageImpl implements FilmDbStorage {
             genreList.add(genreService.getGenre(id));
         }
         return genreList;
+    }
+
+    private boolean findGenreToFilm(Integer idFilm, Integer idGenre) {
+        String sqlQuery = String.format("select COUNT(*)\n" +
+                "from FILM_TO_GENRE\n" +
+                "where FILM_ID = %d and GENRE_ID = %d", idFilm, idGenre);
+        return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
+    }
+
+    private boolean findLikeUserToFilm(Integer idFilm, Integer idUser) {
+        String sqlQuery = String.format("select COUNT(*)\n" +
+                "from USER_LIKE_FILM\n" +
+                "where FILM_ID = %d and USER_ID = %d", idFilm, idUser);
+        return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {

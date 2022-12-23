@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -16,5 +18,11 @@ public interface FilmDbStorage {
     void upgradeFilm(Film film);
     Optional<Film> findFilm(Integer id);
     Collection<Film> findAll();
-    void setGenreFilm(Integer idFilm, Integer idGenre);
+    boolean setGenreFilm(Integer idFilm, Integer idGenre);
+    boolean deleteGenreFilm(Integer idFilm, Integer idGenre);
+
+    boolean addLikeFilm(Integer idFilm, Integer idUser);
+    List<Film> listMostPopularFilms(int limit);
+    boolean deleteLike(Integer idFilm, Integer idUser);
+    List<Genre> getGenresFilm(Integer filmId);
 }

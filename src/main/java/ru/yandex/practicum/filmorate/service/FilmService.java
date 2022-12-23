@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
@@ -36,7 +37,15 @@ public class FilmService {
 
     public Film addFilm(Film film) {
         film.setId(filmDbStorage.addFilm(film));
-        filmSetMpaAndGenre(film);
+        film.setMpa(mpaService.getMpa(film.getMpa().getId()));
+        List<Genre> actualGenreFilm = new ArrayList<>();
+        for (Genre genre : film.getGenres()){
+            actualGenreFilm.add(genreService.getGenre(genre.getId()));
+            if(!filmDbStorage.setGenreFilm(film.getId(), genre.getId())) {
+                throw new ValidationException("Не удалось устанвоить жанр для фильма");
+            }
+        }
+        film.setGenres(actualGenreFilm);
         return film;
     }
 
@@ -46,7 +55,24 @@ public class FilmService {
 
     public void upgradeFilm(Film film) {
         filmDbStorage.upgradeFilm(film);
-        filmSetMpaAndGenre(film);
+        film.setMpa(mpaService.getMpa(film.getMpa().getId()));
+        List<Genre> actualGenreFilm = film.getGenres();
+        List<Genre> currentGenreFilm = filmDbStorage.getGenresFilm(film.getId());
+        for (Genre genre : actualGenreFilm){
+            if(!currentGenreFilm.contains(genre)){
+                if(!filmDbStorage.setGenreFilm(film.getId(), genre.getId())) {
+                    throw new ValidationException("Не удалось устанвоить жанр для фильма");
+                }
+            }
+        }
+        for(Genre genre : currentGenreFilm){
+            if(!actualGenreFilm.contains(genre)){
+                if(!filmDbStorage.deleteGenreFilm(film.getId(), genre.getId())) {
+                    throw new ValidationException("Не удалось удалить жанр для фильма");
+                }
+            }
+        }
+        film.setGenres(actualGenreFilm);
     }
 
     public Collection<Film> getFilmsList(){
@@ -60,44 +86,27 @@ public class FilmService {
         if(userId < 1){
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
-//        if (!filmDbStorage.getFilms().get(filmId).getLikes().contains(userId)){
-//            filmDbStorage.getFilms().get(filmId).addLike(userId);
-//        }
+        if(!filmDbStorage.addLikeFilm(filmId, userId)) {
+            throw new ValidationException("Не удалось устанвоить жанр для фильма");
+        }
     }
 
-    public void deleteLikeFilm(Integer filmId, Integer userId){
-        if(filmId < 1){
+    public void deleteLikeFilm(Integer idFilm, Integer idUser){
+        if(idFilm < 1){
             throw new FilmNotFoundException("Id фильма должно быть больше 0");
         }
-        if(userId < 1){
+        if(idUser < 1){
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
-        //filmDbStorage.getFilms().get(filmId).deleteLike(userId);
+        if(!filmDbStorage.deleteLike(idFilm, idUser)) {
+            throw new ValidationException("Не корректный запрос на удаление лайка");
+        }
     }
 
     public List<Film> getMostPopularMoviesOfLikes(Integer count){
         if(count < 1){
             throw new IncorrectParameterException("Значение count должно быть больше 0");
         }
-        Comparator<Film> filmComparator = (film1, film2) -> {
-            if(film2.getRate().compareTo(film1.getRate()) == 0){
-                return film1.getName().compareTo(film2.getName());
-            }
-            return film2.getRate().compareTo(film1.getRate());
-        };
-        return getFilmsList().stream()
-                .sorted(filmComparator)
-                .limit(count)
-                .collect(Collectors.toList());
-    }
-
-    private void filmSetMpaAndGenre(Film film){
-        film.setMpa(mpaService.getMpa(film.getMpa().getId()));
-        List<Genre> actualGenreFilm = new ArrayList<>();
-        for (Genre genre : film.getGenres()){
-            actualGenreFilm.add(genreService.getGenre(genre.getId()));
-            filmDbStorage.setGenreFilm(film.getId(), genre.getId());
-        }
-        film.setGenres(actualGenreFilm);
+        return filmDbStorage.listMostPopularFilms(count);
     }
 }

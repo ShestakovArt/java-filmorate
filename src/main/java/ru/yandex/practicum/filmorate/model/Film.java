@@ -27,7 +27,6 @@ public class Film{
     Mpa mpa;
     List<Genre> genres;
     Integer rate;
-    Set<Integer> likes = new HashSet<>();
 
     public Film(String name, String description, String releaseDate, int duration, Integer rate,
                 Mpa mpa, List<Genre> genres) {
@@ -35,27 +34,13 @@ public class Film{
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = Long.valueOf(duration);
-        if(rate == null || rate < 0){
-            this.rate = likes.size();
-        }else{
-            this.rate = rate + likes.size();
-        }
+        this.rate = rate;
         this.mpa = mpa;
         if(genres == null){
             this.genres = new ArrayList<>();
         } else {
             this.genres = genres;
         }
-    }
-
-    public void addLike(Integer idUser){
-        likes.add(idUser);
-        this.rate = rate + likes.size();
-    }
-
-    public void deleteLike(Integer idUser){
-        this.rate = rate - likes.size();
-        likes.remove(idUser);
     }
 
     public Map<String,Object> toMap() {

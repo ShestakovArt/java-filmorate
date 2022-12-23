@@ -39,7 +39,7 @@ public class GenreDbStorageImpl implements GenreDbStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowToGenre);
     }
 
-    private Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
+        private Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
         Genre genre = new Genre(resultSet.getInt("GENRE_ID")
                 , resultSet.getString("GENRE_NAME"));
         return genre;
