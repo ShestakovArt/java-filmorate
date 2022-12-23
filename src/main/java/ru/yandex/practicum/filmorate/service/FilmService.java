@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
@@ -8,6 +9,8 @@ import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
@@ -16,18 +19,24 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     FilmDbStorage filmDbStorage;
+    final MpaService mpaService;
+    final GenreService genreService;
 
     @Autowired
-    public FilmService(FilmDbStorageImpl filmDbStorage) {
+    public FilmService(FilmDbStorageImpl filmDbStorage, MpaService mpaService, GenreService genreService) {
         this.filmDbStorage = filmDbStorage;
+        this.mpaService = mpaService;
+        this.genreService = genreService;
     }
 
-    public HashMap<Integer, Film> getFilms() {
-        return null/*filmDbStorage.getFilms()*/;
+    public Film getFilm(Integer id){
+        return filmDbStorage.findFilm(id)
+                .orElseThrow(() ->new FilmNotFoundException("Фильм с идентификатором " + id + " не найден."));
     }
 
     public Film addFilm(Film film) {
         film.setId(filmDbStorage.addFilm(film));
+        filmSetMpaAndGenre(film);
         return film;
     }
 
@@ -37,10 +46,11 @@ public class FilmService {
 
     public void upgradeFilm(Film film) {
         filmDbStorage.upgradeFilm(film);
+        filmSetMpaAndGenre(film);
     }
 
     public Collection<Film> getFilmsList(){
-        return null/*filmDbStorage.getFilms().values()*/;
+        return filmDbStorage.findAll();
     }
 
     public void addLikeFilm(Integer filmId, Integer userId){
@@ -79,5 +89,15 @@ public class FilmService {
                 .sorted(filmComparator)
                 .limit(count)
                 .collect(Collectors.toList());
+    }
+
+    private void filmSetMpaAndGenre(Film film){
+        film.setMpa(mpaService.getMpa(film.getMpa().getId()));
+        List<Genre> actualGenreFilm = new ArrayList<>();
+        for (Genre genre : film.getGenres()){
+            actualGenreFilm.add(genreService.getGenre(genre.getId()));
+            filmDbStorage.setGenreFilm(film.getId(), genre.getId());
+        }
+        film.setGenres(actualGenreFilm);
     }
 }

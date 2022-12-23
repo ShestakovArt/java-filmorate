@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -61,6 +60,44 @@ public class UserDbStorageImpl implements UserDbStorage {
     public List<User> findAll() {
         String sqlQuery = "select USER_ID, USER_EMAIL, USER_LOGIN, USER_NAME, USER_BIRTHDAY from USERS";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser);
+    }
+
+    @Override
+    public boolean addRequestsFriendship (Integer sender, Integer recipient){
+        if(!findRequestsFriendship(sender, recipient)){
+            HashMap<String, Integer> map = new HashMap<>();
+            map.put("SENDER_ID", sender);
+            map.put("RECIPIENT_ID", recipient);
+            SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                    .withTableName("FRIENDSHIP_REQUESTS")
+                    .usingColumns("SENDER_ID", "RECIPIENT_ID");
+            return simpleJdbcInsert.execute(map) == 1;
+        }
+        return false;
+    }
+
+    @Override
+    public List<Integer> findAllFriends(Integer idUser) {
+        String sqlQuery = String.format("select RECIPIENT_ID as friends\n" +
+                "from FRIENDSHIP_REQUESTS\n" +
+                "where SENDER_ID = %d", idUser, idUser);
+        return jdbcTemplate.queryForList(sqlQuery, Integer.class);
+    }
+
+    @Override
+    public boolean deleteFriends(Integer idUser, Integer idFriend) {
+        String sqlQuery = String.format("delete\n" +
+                "from FRIENDSHIP_REQUESTS\n" +
+                "where SENDER_ID = %d and RECIPIENT_ID = %d", idUser, idFriend);
+        return jdbcTemplate.update(sqlQuery) > 0;
+    }
+
+    private boolean findRequestsFriendship(Integer firstId, Integer secondId) {
+        String sqlQuery = String.format("select COUNT(*)\n" +
+                "from FRIENDSHIP_REQUESTS\n" +
+                "where (SENDER_ID = %d or RECIPIENT_ID = %d)" +
+                " and (SENDER_ID = %d or RECIPIENT_ID = %d)", firstId, firstId, secondId, secondId);
+        return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 
     private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {

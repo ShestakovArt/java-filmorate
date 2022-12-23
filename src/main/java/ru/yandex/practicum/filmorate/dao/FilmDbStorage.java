@@ -16,4 +16,5 @@ public interface FilmDbStorage {
     void upgradeFilm(Film film);
     Optional<Film> findFilm(Integer id);
     Collection<Film> findAll();
+    void setGenreFilm(Integer idFilm, Integer idGenre);
 }

@@ -1,0 +1,27 @@
+package ru.yandex.practicum.filmorate.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
+import ru.yandex.practicum.filmorate.dao.impl.GenreDbStorageImpl;
+import ru.yandex.practicum.filmorate.model.Genre;
+
+import java.util.Collection;
+
+@Service
+public class GenreService {
+    GenreDbStorage genreDbStorage;
+
+    @Autowired
+    public GenreService(GenreDbStorageImpl genreDbStorage){
+        this.genreDbStorage = genreDbStorage;
+    }
+
+    public Collection<Genre> getGenreList(){
+        return genreDbStorage.findAll();
+    }
+
+    public Genre getGenre(Integer id){
+        return new Genre(id, genreDbStorage.findNameGenre(id));
+    }
+}
