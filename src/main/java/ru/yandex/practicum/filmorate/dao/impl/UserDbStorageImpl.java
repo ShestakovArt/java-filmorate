@@ -31,12 +31,6 @@ public class UserDbStorageImpl implements UserDbStorage {
     }
 
     @Override
-    public boolean deleteUser(Integer id) {
-        String sqlQuery = "delete from USERS where USER_ID = ?";
-        return jdbcTemplate.update(sqlQuery, id) > 0;
-    }
-
-    @Override
     public void upgradeUser(User user) {
         String sqlQuery = "update USERS set " +
                 "USER_EMAIL = ?, USER_LOGIN = ?, USER_NAME = ? , USER_BIRTHDAY = ?" +

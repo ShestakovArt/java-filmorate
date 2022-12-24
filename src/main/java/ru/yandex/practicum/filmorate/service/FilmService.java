@@ -45,10 +45,6 @@ public class FilmService {
         return film;
     }
 
-    public void deleteFilm(Integer id) {
-        filmDbStorage.deleteFilm(id);
-    }
-
     public void upgradeFilm(Film film) {
         filmDbStorage.upgradeFilm(film);
         film.setMpa(mpaService.getMpa(film.getMpa().getId()));
@@ -83,7 +79,7 @@ public class FilmService {
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
         if(!filmDbStorage.addLikeFilm(filmId, userId)) {
-            throw new ValidationException("Не удалось устанвоить жанр для фильма");
+            throw new ValidationException("Не удалось поставить лайк");
         }
     }
 

@@ -38,12 +38,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public boolean deleteFilm(Integer id) {
-        String sqlQuery = "delete from FILMS where FILM_ID = ?";
-        return jdbcTemplate.update(sqlQuery, id) > 0;
-    }
-
-    @Override
     public void upgradeFilm(Film film) {
         String sqlQuery = "update FILMS set " +
                 "FILM_NAME = ?, MPA_ID = ?, FILM_DESCRIPTION = ? , FILM_RELEASE_DATE = ?, FILM_DURATION = ?, FILM_RATE = ?" +
