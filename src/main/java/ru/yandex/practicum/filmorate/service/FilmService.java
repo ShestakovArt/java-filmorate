@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
+import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
@@ -15,15 +16,17 @@ import java.util.*;
 
 @Service
 public class FilmService {
-    FilmDbStorage filmDbStorage;
+    final FilmDbStorage filmDbStorage;
     final MpaService mpaService;
     final GenreService genreService;
+    final UserDbStorage userDbStorage;
 
     @Autowired
-    public FilmService(FilmDbStorageImpl filmDbStorage, MpaService mpaService, GenreService genreService) {
+    public FilmService(FilmDbStorageImpl filmDbStorage, MpaService mpaService, GenreService genreService, UserDbStorage userDbStorage) {
         this.filmDbStorage = filmDbStorage;
         this.mpaService = mpaService;
         this.genreService = genreService;
+        this.userDbStorage = userDbStorage;
     }
 
     public Film getFilm(Integer id){

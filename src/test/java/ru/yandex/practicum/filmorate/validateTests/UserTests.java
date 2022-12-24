@@ -20,6 +20,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@AutoConfigureTestDatabase
 @FieldDefaults(level= AccessLevel.PRIVATE)
 public class UserTests {
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
