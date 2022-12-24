@@ -57,7 +57,7 @@ public class FilmController {
             filmService.upgradeFilm(film);
             response = new ResponseEntity<>(film, HttpStatus.OK);
         } catch (FilmNotFoundException | EmptyResultDataAccessException e){
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            response = new ResponseEntity<>(film, HttpStatus.NOT_FOUND);
         }
         return response;
     }

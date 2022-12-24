@@ -18,12 +18,14 @@ create table MPA
 );
 create table FILMS
 (
-    FILM_ID           INTEGER auto_increment,
-    FILM_NAME         CHARACTER VARYING(50)  not null,
-    MPA_ID            INTEGER                not null,
-    FILM_DESCRIPTION  CHARACTER VARYING(200) not null,
-    FILM_RELEASE_DATE DATE                   not null,
-    FILM_DURATION     INTEGER                not null,
+    FILM_ID             INTEGER auto_increment,
+    FILM_NAME           CHARACTER VARYING(50)  not null,
+    MPA_ID              INTEGER                not null,
+    FILM_DESCRIPTION    CHARACTER VARYING(200) not null,
+    FILM_RELEASE_DATE   DATE                   not null,
+    FILM_DURATION       INTEGER                not null,
+    FILM_RATE           INTEGER                default 0,
+    FILM_RATE_AND_LIKES INTEGER                default 0,
     constraint FILMS_PK
         primary key (FILM_ID),
     constraint FILMS_FK

@@ -23,10 +23,12 @@ public class Film{
     String releaseDate;
     @Positive(message = "Продолжительность фильма должна быть положительной")
     Long duration;
-
+    Integer rate;
     Mpa mpa;
     List<Genre> genres;
-    Integer rate;
+
+    Integer rateAndLikes;
+
 
     public Film(String name, String description, String releaseDate, int duration, Integer rate,
                 Mpa mpa, List<Genre> genres) {
@@ -34,7 +36,11 @@ public class Film{
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = Long.valueOf(duration);
-        this.rate = rate;
+        if(rate != null){
+            this.rate = rate;
+        } else {
+            this.rate = 0;
+        }
         this.mpa = mpa;
         if(genres == null){
             this.genres = new ArrayList<>();
@@ -49,7 +55,9 @@ public class Film{
         values.put("FILM_DESCRIPTION", description);
         values.put("FILM_RELEASE_DATE", releaseDate);
         values.put("FILM_DURATION", duration);
+        values.put("FILM_RATE", rate);
         values.put("MPA_ID", mpa.getId());
+        values.put("FILM_RATE_AND_LIKES", rateAndLikes);
         return values;
     }
 }

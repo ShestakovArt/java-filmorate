@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
@@ -11,11 +10,8 @@ import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
@@ -56,20 +52,20 @@ public class FilmService {
     public void upgradeFilm(Film film) {
         filmDbStorage.upgradeFilm(film);
         film.setMpa(mpaService.getMpa(film.getMpa().getId()));
-        List<Genre> actualGenreFilm = film.getGenres();
-        List<Genre> currentGenreFilm = filmDbStorage.getGenresFilm(film.getId());
-        for (Genre genre : actualGenreFilm){
-            if(!currentGenreFilm.contains(genre)){
-                if(!filmDbStorage.setGenreFilm(film.getId(), genre.getId())) {
-                    throw new ValidationException("Не удалось устанвоить жанр для фильма");
-                }
+        List<Genre> actualGenreFilm = new ArrayList<>();
+        for (Genre genre : film.getGenres()){
+            if(!actualGenreFilm.contains(genreService.getGenre(genre.getId()))){
+                actualGenreFilm.add(genreService.getGenre(genre.getId()));
+            }
+            if(!filmDbStorage.setGenreFilm(film.getId(), genre.getId())) {
+                throw new ValidationException("Не удалось устанвоить жанр для фильма");
             }
         }
-        for(Genre genre : currentGenreFilm){
-            if(!actualGenreFilm.contains(genre)){
-                if(!filmDbStorage.deleteGenreFilm(film.getId(), genre.getId())) {
-                    throw new ValidationException("Не удалось удалить жанр для фильма");
-                }
+
+        List<Genre> currentGenreFilm = filmDbStorage.getGenresFilm(film.getId());
+        for(Genre current : currentGenreFilm){
+            if(!actualGenreFilm.contains(current)){
+                filmDbStorage.deleteGenreFilm(film.getId(), current.getId());
             }
         }
         film.setGenres(actualGenreFilm);
