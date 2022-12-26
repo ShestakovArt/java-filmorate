@@ -59,74 +59,38 @@ public class UserController {
 
     @GetMapping(pathId)
     public ResponseEntity<User> getUser(@PathVariable int id){
-        ResponseEntity response;
-        try {
-            response = new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
-        }
-        catch (UserNotFoundException | EmptyResultDataAccessException e){
-            response = new ResponseEntity<>("Нет пользователя с таким ID", HttpStatus.NOT_FOUND);
-        }
-        return response;
+        return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
     }
 
     @PutMapping(pathIdFriend)
     public ResponseEntity<User> putUserFriend(@PathVariable Integer id, @PathVariable Integer friendId){
         ResponseEntity response;
-        try {
-            if(userService.addFriend(id, friendId)) {
-                response = new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
-            } else {
-                throw new ValidationException("Не удалось добавить пользователя в друзья");
-            }
-        }
-        catch (UserNotFoundException | ValidationException | EmptyResultDataAccessException e){
-            response = new ResponseEntity<>(userService.getUser(id), HttpStatus.NOT_FOUND);
+        if(userService.addFriend(id, friendId)) {
+            response = new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
+        } else {
+            throw new IncorrectParameterException("Не удалось добавить пользователя в друзья");
         }
         return response;
     }
 
     @DeleteMapping(pathIdFriend)
     public ResponseEntity<User> deleteUserFriend(@PathVariable Integer id, @PathVariable Integer friendId){
-        ResponseEntity response;
-        try {
-            userService.getUser(id);
-            userService.getUser(friendId);
-            userService.deleteFriend(id, friendId);
-            response = new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        catch (UserNotFoundException |
-               ValidationException |
-               IncorrectParameterException |
-               EmptyResultDataAccessException e){
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return response;
+        userService.getUser(id);
+        userService.getUser(friendId);
+        userService.deleteFriend(id, friendId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping(pathFriends)
     public ResponseEntity<List<User>> getUserFriends(@PathVariable Integer id){
-        ResponseEntity response;
-        try {
-            userService.getUser(id);
-            response = new ResponseEntity<>(userService.getUserFriends(id), HttpStatus.OK);
-        }
-        catch (UserNotFoundException | ValidationException | EmptyResultDataAccessException e){
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return response;
+        userService.getUser(id);
+        return new ResponseEntity<>(userService.getUserFriends(id), HttpStatus.OK);
     }
 
     @GetMapping(pathFriends + "/common/{otherId}")
     public ResponseEntity<List<User>> getCommonUsersFriends(@PathVariable Integer id, @PathVariable Integer otherId){
-        ResponseEntity response;
-        try {
-            userService.getUser(id);
-            userService.getUser(otherId);
-            response = new ResponseEntity<>(userService.getCommonFriend(id, otherId), HttpStatus.OK);
-        }
-        catch (UserNotFoundException | ValidationException | EmptyResultDataAccessException e){
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return response;
+        userService.getUser(id);
+        userService.getUser(otherId);
+        return new ResponseEntity<>(userService.getCommonFriend(id, otherId), HttpStatus.OK);
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -118,7 +119,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "    FROM FILMS ORDER BY FILM_RATE_AND_LIKES DESC LIMIT %d", limit);
         List<Integer> listIdFilms = jdbcTemplate.queryForList(sqlQuery, Integer.class);
         if(listIdFilms.size() < 1){
-            throw new ValidationException("Список популярных фильмов пуст");
+            throw new IncorrectParameterException("Список популярных фильмов пуст");
         }
         for(Integer id : listIdFilms){
             mostPopularFilms.add(findFilm(id)

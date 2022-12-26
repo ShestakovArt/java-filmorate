@@ -41,7 +41,7 @@ public class FilmService {
         for (Genre genre : film.getGenres()){
             actualGenreFilm.add(genreService.getGenre(genre.getId()));
             if(!filmDbStorage.setGenreFilm(film.getId(), genre.getId())) {
-                throw new ValidationException("Не удалось устанвоить жанр для фильма");
+                throw new IncorrectParameterException("Не удалось устанвоить жанр для фильма");
             }
         }
         film.setGenres(actualGenreFilm);
@@ -57,7 +57,7 @@ public class FilmService {
                 actualGenreFilm.add(genreService.getGenre(genre.getId()));
             }
             if(!filmDbStorage.setGenreFilm(film.getId(), genre.getId())) {
-                throw new ValidationException("Не удалось устанвоить жанр для фильма");
+                throw new IncorrectParameterException("Не удалось устанвоить жанр для фильма");
             }
         }
 
@@ -82,7 +82,7 @@ public class FilmService {
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
         if(!filmDbStorage.addLikeFilm(filmId, userId)) {
-            throw new ValidationException("Не удалось поставить лайк");
+            throw new IncorrectParameterException("Не удалось поставить лайк");
         }
     }
 
@@ -94,7 +94,7 @@ public class FilmService {
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
         if(!filmDbStorage.deleteLike(idFilm, idUser)) {
-            throw new ValidationException("Не корректный запрос на удаление лайка");
+            throw new IncorrectParameterException("Не корректный запрос на удаление лайка");
         }
     }
 

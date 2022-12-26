@@ -35,13 +35,6 @@ public class GenreController {
 
     @GetMapping(pathId)
     public ResponseEntity<Genre> getGenre(@PathVariable int id){
-        ResponseEntity response;
-        try {
-            response = new ResponseEntity<>(genreService.getGenre(id), HttpStatus.OK);
-        }
-        catch (ValidationException | EmptyResultDataAccessException e){
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return response;
+        return new ResponseEntity<>(genreService.getGenre(id), HttpStatus.OK);
     }
 }

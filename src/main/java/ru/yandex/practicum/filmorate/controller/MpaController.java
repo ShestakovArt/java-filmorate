@@ -34,13 +34,6 @@ public class MpaController {
 
     @GetMapping(pathId)
     public ResponseEntity<Mpa> getMpa(@PathVariable int id){
-        ResponseEntity response;
-        try {
-            response = new ResponseEntity<>(mpaService.getMpa(id), HttpStatus.OK);
-        }
-        catch (ValidationException | EmptyResultDataAccessException e){
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return response;
+        return new ResponseEntity<>(mpaService.getMpa(id), HttpStatus.OK);
     }
 }
