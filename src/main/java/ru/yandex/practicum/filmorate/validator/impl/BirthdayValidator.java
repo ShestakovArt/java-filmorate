@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.validator.impl;
 
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.validator.BirthdayValid;
 

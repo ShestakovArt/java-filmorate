@@ -2,10 +2,14 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -40,7 +44,13 @@ public class UserController {
 
     @PutMapping()
     public ResponseEntity<User> update(@Valid @RequestBody @NotNull User user){
-        if(!userService.getUsers().containsKey(user.getId())){
+        boolean findFlag = false;
+        for (User equredUser : userService.getUsersList()){
+            if(equredUser.getId() == user.getId()){
+                findFlag = true;
+            }
+        }
+        if(!findFlag){
             throw new UserNotFoundException("Нет пользователя с таким ID");
         }
         userService.upgradeUser(user);
@@ -49,43 +59,38 @@ public class UserController {
 
     @GetMapping(pathId)
     public ResponseEntity<User> getUser(@PathVariable int id){
-        if(!userService.getUsers().containsKey(id)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
-        }
-        return new ResponseEntity<>(userService.getUsers().get(id), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
     }
 
     @PutMapping(pathIdFriend)
     public ResponseEntity<User> putUserFriend(@PathVariable Integer id, @PathVariable Integer friendId){
-        if(!userService.getUsers().containsKey(id) || !userService.getUsers().containsKey(friendId)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
+        ResponseEntity response;
+        if(userService.addFriend(id, friendId)) {
+            response = new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
+        } else {
+            throw new IncorrectParameterException("Не удалось добавить пользователя в друзья");
         }
-        userService.addFriend(id, friendId);
-        return new ResponseEntity<>(userService.getUsers().get(id), HttpStatus.OK);
+        return response;
     }
 
     @DeleteMapping(pathIdFriend)
     public ResponseEntity<User> deleteUserFriend(@PathVariable Integer id, @PathVariable Integer friendId){
-        if(!userService.getUsers().containsKey(id) || !userService.getUsers().containsKey(friendId)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
-        }
+        userService.getUser(id);
+        userService.getUser(friendId);
         userService.deleteFriend(id, friendId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping(pathFriends)
     public ResponseEntity<List<User>> getUserFriends(@PathVariable Integer id){
-        if(!userService.getUsers().containsKey(id)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
-        }
+        userService.getUser(id);
         return new ResponseEntity<>(userService.getUserFriends(id), HttpStatus.OK);
     }
 
     @GetMapping(pathFriends + "/common/{otherId}")
     public ResponseEntity<List<User>> getCommonUsersFriends(@PathVariable Integer id, @PathVariable Integer otherId){
-        if(!userService.getUsers().containsKey(id) || !userService.getUsers().containsKey(otherId)){
-            throw new UserNotFoundException("Нет пользователя с таким ID");
-        }
+        userService.getUser(id);
+        userService.getUser(otherId);
         return new ResponseEntity<>(userService.getCommonFriend(id, otherId), HttpStatus.OK);
     }
 }

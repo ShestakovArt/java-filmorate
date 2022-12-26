@@ -1,9 +1,13 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.validateTests;
 
 
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.ConstraintViolation;
@@ -16,8 +20,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@AutoConfigureTestDatabase
 @FieldDefaults(level= AccessLevel.PRIVATE)
-public class UserTest {
+public class UserTests {
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     Validator validator = factory.getValidator();
 

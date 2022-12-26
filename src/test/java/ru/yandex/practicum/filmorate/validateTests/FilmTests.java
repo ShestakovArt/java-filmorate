@@ -1,21 +1,22 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.validateTests;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.Objects;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@AutoConfigureTestDatabase
 @FieldDefaults(level= AccessLevel.PRIVATE)
-public class FilmTest {
+public class FilmTests {
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     Validator validator = factory.getValidator();
     String description = "Немецкий кинофильм 1997 года режиссёра Томаса Яна о двух мужчинах, " +
@@ -27,7 +28,7 @@ public class FilmTest {
         Film film = new Film("Достучатся до небес",
                 description,
                 "1997-02-20",
-                87, null);
+                87, null, null, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertTrue(violations.isEmpty(), "Объект film создан не корректно");
@@ -38,7 +39,7 @@ public class FilmTest {
         Film film = new Film("",
                 description,
                 "1997-02-20",
-                87, null);
+                87, null, null, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         for (ConstraintViolation<Film> filmConstraintViolation : violations){
@@ -52,7 +53,7 @@ public class FilmTest {
         Film film = new Film("Достучатся до небес",
                 description + "Увеличим описание до значения более 200 символов",
                 "1997-02-20",
-                87, null);
+                87, null, null, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         for (ConstraintViolation<Film> filmConstraintViolation : violations){
@@ -66,7 +67,7 @@ public class FilmTest {
         Film film = new Film("Достучатся до небес",
                 description,
                 "1895-12-26",
-                87, null);
+                87, null, null, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         for (ConstraintViolation<Film> filmConstraintViolation : violations){
@@ -80,7 +81,7 @@ public class FilmTest {
         Film film = new Film("Достучатся до небес",
                 description,
                 "1997-02-20",
-                -1, null);
+                -1, null, null, null);
         film.setId(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         for (ConstraintViolation<Film> filmConstraintViolation : violations){
