@@ -58,6 +58,7 @@ public class Film{
         values.put("FILM_RATE", rate);
         values.put("MPA_ID", mpa.getId());
         values.put("FILM_RATE_AND_LIKES", rateAndLikes);
+
         return values;
     }
 }

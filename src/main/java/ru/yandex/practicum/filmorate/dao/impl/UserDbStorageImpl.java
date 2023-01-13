@@ -27,6 +27,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("USERS")
                 .usingGeneratedKeyColumns("USER_ID");
+
         return simpleJdbcInsert.executeAndReturnKey(user.toMap()).intValue();
     }
 
@@ -35,6 +36,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = "update USERS set " +
                 "USER_EMAIL = ?, USER_LOGIN = ?, USER_NAME = ? , USER_BIRTHDAY = ?" +
                 "where USER_ID = ?";
+
         jdbcTemplate.update(sqlQuery
                 , user.getEmail()
                 , user.getLogin()
@@ -47,12 +49,14 @@ public class UserDbStorageImpl implements UserDbStorage {
     public Optional<User> findUser(Integer id) {
         String sqlQuery = "select USER_ID, USER_EMAIL, USER_LOGIN, USER_NAME, USER_BIRTHDAY " +
                 "from USERS where USER_ID = ?";
+
         return Optional.of(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id));
     }
 
     @Override
     public List<User> findAll() {
         String sqlQuery = "select USER_ID, USER_EMAIL, USER_LOGIN, USER_NAME, USER_BIRTHDAY from USERS";
+
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser);
     }
 
@@ -62,11 +66,14 @@ public class UserDbStorageImpl implements UserDbStorage {
             HashMap<String, Integer> map = new HashMap<>();
             map.put("SENDER_ID", sender);
             map.put("RECIPIENT_ID", recipient);
+
             SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                     .withTableName("FRIENDSHIP_REQUESTS")
                     .usingColumns("SENDER_ID", "RECIPIENT_ID");
+
             return simpleJdbcInsert.execute(map) == 1;
         }
+
         return false;
     }
 
@@ -75,6 +82,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = String.format("select RECIPIENT_ID as friends\n" +
                 "from FRIENDSHIP_REQUESTS\n" +
                 "where SENDER_ID = %d", idUser, idUser);
+
         return jdbcTemplate.queryForList(sqlQuery, Integer.class);
     }
 
@@ -83,6 +91,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = String.format("delete\n" +
                 "from FRIENDSHIP_REQUESTS\n" +
                 "where SENDER_ID = %d and RECIPIENT_ID = %d", idUser, idFriend);
+
         return jdbcTemplate.update(sqlQuery) > 0;
     }
 
@@ -91,6 +100,7 @@ public class UserDbStorageImpl implements UserDbStorage {
                 "from FRIENDSHIP_REQUESTS\n" +
                 "where (SENDER_ID = %d or RECIPIENT_ID = %d)" +
                 " and (SENDER_ID = %d or RECIPIENT_ID = %d)", firstId, firstId, secondId, secondId);
+
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 
@@ -100,6 +110,7 @@ public class UserDbStorageImpl implements UserDbStorage {
                 , resultSet.getString("USER_NAME")
                 , resultSet.getString("USER_BIRTHDAY"));
         user.setId(resultSet.getInt("USER_ID"));
+
         return user;
     }
 }

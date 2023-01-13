@@ -23,6 +23,7 @@ public class Mpa{
         Map<String, Object> values = new HashMap<>();
         values.put("MPA_ID", id);
         values.put("MPA_NAME", name);
+
         return values;
     }
 }
