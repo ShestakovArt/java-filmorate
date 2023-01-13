@@ -41,6 +41,7 @@ public class User {
         values.put("USER_LOGIN", login);
         values.put("USER_NAME", name);
         values.put("USER_BIRTHDAY", birthday);
+
         return values;
     }
 }

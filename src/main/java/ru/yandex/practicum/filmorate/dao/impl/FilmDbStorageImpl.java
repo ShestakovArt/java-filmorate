@@ -35,6 +35,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("FILMS")
                 .usingGeneratedKeyColumns("FILM_ID");
+
         return simpleJdbcInsert.executeAndReturnKey(film.toMap()).intValue();
     }
 
@@ -43,6 +44,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = "update FILMS set " +
                 "FILM_NAME = ?, MPA_ID = ?, FILM_DESCRIPTION = ? , FILM_RELEASE_DATE = ?, FILM_DURATION = ?, FILM_RATE = ?" +
                 "where FILM_ID = ?";
+
         jdbcTemplate.update(sqlQuery
                 , film.getName()
                 , film.getMpa().getId()
@@ -58,6 +60,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = "select FILM_ID, FILM_NAME, MPA_ID, FILM_DESCRIPTION, FILM_RELEASE_DATE, FILM_DURATION, " +
                 "FILM_RATE, FILM_RATE_AND_LIKES " +
                 "from FILMS where FILM_ID = ?";
+
         return Optional.of(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id));
     }
 
@@ -66,6 +69,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = "select FILM_ID, FILM_NAME, MPA_ID, FILM_DESCRIPTION, FILM_RELEASE_DATE, FILM_DURATION, " +
                 "FILM_RATE, FILM_RATE_AND_LIKES " +
                 "from FILMS";
+
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
 
@@ -73,8 +77,10 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     public boolean setGenreFilm(Integer idFilm, Integer idGenre){
         if(!findGenreToFilm(idFilm, idGenre)){
             String sqlQuery = String.format("INSERT INTO FILM_TO_GENRE VALUES (%d, %d)", idFilm, idGenre);
+
             return jdbcTemplate.update(sqlQuery) == 1;
         }
+
         return true;
     }
 
@@ -82,8 +88,10 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     public boolean deleteGenreFilm(Integer idFilm, Integer idGenre){
         if(findGenreToFilm(idFilm, idGenre)){
             String sqlQuery = "delete from FILM_TO_GENRE where FILM_ID = ? AND GENRE_ID = ?";
+
             return jdbcTemplate.update(sqlQuery, idFilm, idGenre) > 0;
         }
+
         return false;
     }
 
@@ -91,8 +99,10 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     public boolean addLikeFilm(Integer idFilm, Integer idUser){
         if(!findLikeUserToFilm(idFilm, idUser)){
             String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", idFilm, idUser);
+
             return jdbcTemplate.update(sqlQuery) == 1;
         }
+
         return false;
     }
 
@@ -109,6 +119,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
             String sqlQueryUpdateFilm = "update FILMS set " +
                     "FILM_RATE_AND_LIKES = ? " +
                     "where FILM_ID = ?";
+
             jdbcTemplate.update(sqlQueryUpdateFilm
                     , film.getRateAndLikes()
                     , film.getId());
@@ -118,13 +129,16 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = String.format("SELECT FILM_ID\n" +
                 "    FROM FILMS ORDER BY FILM_RATE_AND_LIKES DESC LIMIT %d", limit);
         List<Integer> listIdFilms = jdbcTemplate.queryForList(sqlQuery, Integer.class);
+
         if(listIdFilms.size() < 1){
             throw new IncorrectParameterException("Список популярных фильмов пуст");
         }
+
         for(Integer id : listIdFilms){
             mostPopularFilms.add(findFilm(id)
                     .orElseThrow(() ->new FilmNotFoundException("Фильм с идентификатором " + id + " не найден.")));
         }
+
         return mostPopularFilms;
     }
 
@@ -132,8 +146,10 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     public boolean deleteLike(Integer idFilm, Integer idUser) {
         if(findLikeUserToFilm(idFilm, idUser)){
             String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
+
             return jdbcTemplate.update(sqlQuery, idFilm, idUser) > 0;
         }
+
         return false;
     }
 
@@ -144,9 +160,11 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "where FILM_ID = %d", idFilm);
         List<Integer> idGenres = jdbcTemplate.queryForList(sqlQuery, Integer.class);
         List<Genre> genreList = new ArrayList<>();
+
         for (Integer id : idGenres){
             genreList.add(genreService.getGenre(id));
         }
+
         return genreList;
     }
 
@@ -154,6 +172,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = String.format("select COUNT(*)\n" +
                 "from FILM_TO_GENRE\n" +
                 "where FILM_ID = %d and GENRE_ID = %d", idFilm, idGenre);
+
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 
@@ -161,6 +180,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = String.format("select COUNT(*)\n" +
                 "from USER_LIKE_FILM\n" +
                 "where FILM_ID = %d and USER_ID = %d", idFilm, idUser);
+
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 
@@ -170,8 +190,10 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "where FILM_ID = %d", idFilm);
         List<Integer> countRateAndLike = jdbcTemplate.queryForList(sqlQuery, Integer.class);
         if (countRateAndLike.size() > 0) {
+
             return countRateAndLike.get(0);
         } else {
+
             return 0;
         }
     }
@@ -184,10 +206,12 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 , resultSet.getInt("FILM_RATE")
                 , mpaService.getMpa(resultSet.getInt("MPA_ID"))
                 , new ArrayList<>());
+
         film.setId(resultSet.getInt("FILM_ID"));
         film.setMpa(mpaService.getMpa(film.getMpa().getId()));
         film.setGenres(getGenresFilm(film.getId()));
         film.setRateAndLikes(getRateAndLikeFilm(film.getId()));
+
         return film;
     }
 }

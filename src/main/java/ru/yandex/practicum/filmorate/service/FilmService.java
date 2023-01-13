@@ -45,6 +45,7 @@ public class FilmService {
             }
         }
         film.setGenres(actualGenreFilm);
+
         return film;
     }
 
@@ -102,6 +103,7 @@ public class FilmService {
         if(count < 1){
             throw new IncorrectParameterException("Значение count должно быть больше 0");
         }
+
         return filmDbStorage.listMostPopularFilms(count);
     }
 }

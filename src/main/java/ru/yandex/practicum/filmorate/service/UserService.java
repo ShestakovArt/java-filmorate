@@ -22,6 +22,7 @@ public class UserService {
 
     public User addUser(User user) {
         user.setId(userDbStorage.addUser(user));
+
         return user;
     }
 
@@ -40,6 +41,7 @@ public class UserService {
             getUser(idUser);
             getUser(idFriend);
         }
+
         return userDbStorage.addRequestsFriendship(idUser,idFriend);
     }
 
@@ -61,6 +63,7 @@ public class UserService {
         for (Integer friendId : idFriendsList){
             friends.add(getUser(friendId));
         }
+
         return friends;
     }
 
@@ -74,6 +77,7 @@ public class UserService {
         for(Integer idFriendUser : common){
             commonFriend.add(getUser(idFriendUser));
         }
+
         return commonFriend;
     }
 
