@@ -10,4 +10,7 @@ import java.util.List;
 public interface GenreDbStorage {
     String findNameGenre(Integer id);
     Collection<Genre> findAll();
+    List<Genre> getFilmGenres(Integer idFilm);
+    boolean deleteFilmGenre(Integer idFilm, Integer idGenre);
+    boolean setFilmGenre(Integer idFilm, Integer idGenre);
 }

@@ -41,7 +41,7 @@ public class FilmIntegrationTests {
                     "1997-02-20",
                     87, 4, new Mpa(1, "G"), genres);
             filmDbStorage.addFilm(film);
-            filmDbStorage.setGenreFilm(1, 2);
+            genreDbStorage.setFilmGenre(1, 2);
 
             Film filmNext = new Film("Тестовая драмма",
                     "Тестовый фильм",
@@ -49,7 +49,7 @@ public class FilmIntegrationTests {
                     75, 0, new Mpa(2, "PG"), genres);
             filmDbStorage.addFilm(filmNext);
 
-            filmDbStorage.setGenreFilm(2, 2);
+            genreDbStorage.setFilmGenre(2, 2);
         }
         if(userStorage.findAll().size() != 2){
             User firstTestUser = new User("testUserOne@yandex.ru",
@@ -106,7 +106,7 @@ public class FilmIntegrationTests {
 
     @Test
     public void testSetGenreFilm(){
-        assertTrue(filmDbStorage.setGenreFilm(1, 1), "Жанр фильма не изменился");
+        assertTrue(genreDbStorage.setFilmGenre(1, 1), "Жанр фильма не изменился");
         List<Genre> genres = new ArrayList<>();
         genres.add(new Genre(2, genreDbStorage.findNameGenre(2)));
         genres.add(new Genre(1, genreDbStorage.findNameGenre(1)));
@@ -118,12 +118,12 @@ public class FilmIntegrationTests {
                         assertThat(film).hasFieldOrPropertyWithValue("genres", genres)
                 );
 
-        filmDbStorage.deleteGenreFilm(1, 1);
+        genreDbStorage.deleteFilmGenre(1, 1);
     }
 
     @Test
     public void testDeleteGenreFilm(){
-        assertTrue(filmDbStorage.deleteGenreFilm(2, 2), "Жанр фильма не изменился");
+        assertTrue(genreDbStorage.deleteFilmGenre(2, 2), "Жанр фильма не изменился");
         List<Genre> genres = new ArrayList<>();
         Optional<Film> filmOptional = filmDbStorage.findFilm(2);
 
@@ -133,12 +133,12 @@ public class FilmIntegrationTests {
                         assertThat(film).hasFieldOrPropertyWithValue("genres", genres)
                 );
 
-        filmDbStorage.setGenreFilm(2, 2);
+        genreDbStorage.setFilmGenre(2, 2);
     }
 
     @Test
     public void testGetGenresFilm(){
-        List<Genre> genreList = filmDbStorage.getGenresFilm(1);
+        List<Genre> genreList = genreDbStorage.getFilmGenres(1);
         Optional<Film> filmOptional = filmDbStorage.findFilm(1);
 
         assertThat(filmOptional)
