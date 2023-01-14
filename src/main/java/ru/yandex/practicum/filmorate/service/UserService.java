@@ -26,6 +26,13 @@ public class UserService {
         return user;
     }
 
+    public void deleteUser(Integer idUser) {
+        if(idUser <1 ){
+            throw new UserNotFoundException("Id пользователя должно быть больше 0");
+        }
+        userDbStorage.deleteUser(idUser);
+    }
+
     public void upgradeUser(User user) {
         userDbStorage.upgradeUser(user);
     }

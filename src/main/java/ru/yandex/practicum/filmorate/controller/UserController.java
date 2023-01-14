@@ -93,4 +93,11 @@ public class UserController {
         userService.getUser(otherId);
         return new ResponseEntity<>(userService.getCommonFriend(id, otherId), HttpStatus.OK);
     }
+
+    @DeleteMapping(pathId)
+    public ResponseEntity<User> deleteUser(@PathVariable int id){
+        userService.deleteUser(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 }

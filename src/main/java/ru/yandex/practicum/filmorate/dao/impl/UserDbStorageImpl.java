@@ -95,6 +95,15 @@ public class UserDbStorageImpl implements UserDbStorage {
         return jdbcTemplate.update(sqlQuery) > 0;
     }
 
+    @Override
+    public boolean deleteUser(Integer idUser) {
+        String sqlQuery = String.format("delete\n" +
+                "from USERS\n" +
+                "where USER_ID = %d", idUser);
+        return jdbcTemplate.update(sqlQuery) > 0;
+    }
+
+
     private boolean findRequestsFriendship(Integer firstId, Integer secondId) {
         String sqlQuery = String.format("select COUNT(*)\n" +
                 "from FRIENDSHIP_REQUESTS\n" +

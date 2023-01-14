@@ -15,5 +15,6 @@ public interface UserDbStorage {
     Collection<User> findAll();
     boolean addRequestsFriendship(Integer idUser, Integer idFriend);
     boolean deleteFriends(Integer idUser, Integer idFriend);
+    boolean deleteUser(Integer idUser);
     List<Integer> findAllFriends(Integer idUser);
 }
