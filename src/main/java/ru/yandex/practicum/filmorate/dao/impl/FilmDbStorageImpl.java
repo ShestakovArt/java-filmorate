@@ -5,11 +5,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
+import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
+import ru.yandex.practicum.filmorate.dao.MpaDbStorage;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
@@ -20,14 +23,15 @@ import java.util.*;
 @Component
 public class FilmDbStorageImpl implements FilmDbStorage {
     private final JdbcTemplate jdbcTemplate;
-    final MpaService mpaService;
-    final GenreService genreService;
+    final MpaDbStorage mpaDbStorage;
+    final GenreDbStorage genreDbStorage;
 
     @Autowired
-    public FilmDbStorageImpl(JdbcTemplate jdbcTemplate, MpaService mpaService, GenreService genreService){
+    public FilmDbStorageImpl(JdbcTemplate jdbcTemplate, MpaDbStorage mpaDbStorage,
+                             GenreDbStorage genreDbStorage){
         this.jdbcTemplate = jdbcTemplate;
-        this.mpaService = mpaService;
-        this.genreService = genreService;
+        this.mpaDbStorage = mpaDbStorage;
+        this.genreDbStorage = genreDbStorage;
     }
 
     @Override
@@ -162,7 +166,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         List<Genre> genreList = new ArrayList<>();
 
         for (Integer id : idGenres){
-            genreList.add(genreService.getGenre(id));
+            genreList.add(new Genre(id, genreDbStorage.findNameGenre(id)));
         }
 
         return genreList;
@@ -204,11 +208,13 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 , resultSet.getString("FILM_RELEASE_DATE")
                 , resultSet.getInt("FILM_DURATION")
                 , resultSet.getInt("FILM_RATE")
-                , mpaService.getMpa(resultSet.getInt("MPA_ID"))
+                , new Mpa(
+                        resultSet.getInt("MPA_ID"), mpaDbStorage.findNameMpa(resultSet.getInt("MPA_ID")))
                 , new ArrayList<>());
 
         film.setId(resultSet.getInt("FILM_ID"));
-        film.setMpa(mpaService.getMpa(film.getMpa().getId()));
+        film.setMpa(new Mpa(
+                film.getMpa().getId(), mpaDbStorage.findNameMpa(film.getMpa().getId())));
         film.setGenres(getGenresFilm(film.getId()));
         film.setRateAndLikes(getRateAndLikeFilm(film.getId()));
 
