@@ -80,4 +80,10 @@ public class FilmController {
         filmService.deleteLikeFilm(id, userId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
+
+    @DeleteMapping(pathId)
+    public ResponseEntity<User> deleteUser(@PathVariable int id){
+        filmService.deleteFilm(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

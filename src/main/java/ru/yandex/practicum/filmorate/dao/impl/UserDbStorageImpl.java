@@ -81,7 +81,7 @@ public class UserDbStorageImpl implements UserDbStorage {
     public List<Integer> findAllFriends(Integer idUser) {
         String sqlQuery = String.format("select RECIPIENT_ID as friends\n" +
                 "from FRIENDSHIP_REQUESTS\n" +
-                "where SENDER_ID = %d", idUser, idUser);
+                "where SENDER_ID = %d", idUser);
 
         return jdbcTemplate.queryForList(sqlQuery, Integer.class);
     }
@@ -98,6 +98,11 @@ public class UserDbStorageImpl implements UserDbStorage {
     @Override
     public boolean deleteUser(Integer idUser) {
         String sqlQuery = String.format("delete\n" +
+                "from FRIENDSHIP_REQUESTS\n" +
+                "where RECIPIENT_ID = %d", idUser);
+        jdbcTemplate.update(sqlQuery);
+
+         sqlQuery = String.format("delete\n" +
                 "from USERS\n" +
                 "where USER_ID = %d", idUser);
         return jdbcTemplate.update(sqlQuery) > 0;

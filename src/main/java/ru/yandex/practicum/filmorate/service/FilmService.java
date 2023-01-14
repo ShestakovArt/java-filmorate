@@ -106,4 +106,11 @@ public class FilmService {
 
         return filmDbStorage.listMostPopularFilms(count);
     }
+
+    public void deleteFilm(int idFilm) {
+        if(idFilm < 1){
+            throw new FilmNotFoundException("Id фильма должно быть больше 0");
+        }
+        filmDbStorage.deleteFilm(idFilm);
+    }
 }

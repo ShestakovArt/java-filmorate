@@ -20,5 +20,6 @@ public interface FilmDbStorage {
     boolean addLikeFilm(Integer idFilm, Integer idUser);
     List<Film> listMostPopularFilms(int limit);
     boolean deleteLike(Integer idFilm, Integer idUser);
+    boolean deleteFilm(Integer idFilm);
     List<Genre> getGenresFilm(Integer filmId);
 }

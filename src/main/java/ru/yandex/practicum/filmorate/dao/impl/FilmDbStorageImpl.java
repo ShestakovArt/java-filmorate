@@ -28,7 +28,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
 
     @Autowired
     public FilmDbStorageImpl(JdbcTemplate jdbcTemplate, MpaDbStorage mpaDbStorage,
-                             GenreDbStorage genreDbStorage){
+                             GenreDbStorage genreDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.mpaDbStorage = mpaDbStorage;
         this.genreDbStorage = genreDbStorage;
@@ -78,8 +78,8 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public boolean setGenreFilm(Integer idFilm, Integer idGenre){
-        if(!findGenreToFilm(idFilm, idGenre)){
+    public boolean setGenreFilm(Integer idFilm, Integer idGenre) {
+        if (!findGenreToFilm(idFilm, idGenre)) {
             String sqlQuery = String.format("INSERT INTO FILM_TO_GENRE VALUES (%d, %d)", idFilm, idGenre);
 
             return jdbcTemplate.update(sqlQuery) == 1;
@@ -89,8 +89,8 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public boolean deleteGenreFilm(Integer idFilm, Integer idGenre){
-        if(findGenreToFilm(idFilm, idGenre)){
+    public boolean deleteGenreFilm(Integer idFilm, Integer idGenre) {
+        if (findGenreToFilm(idFilm, idGenre)) {
             String sqlQuery = "delete from FILM_TO_GENRE where FILM_ID = ? AND GENRE_ID = ?";
 
             return jdbcTemplate.update(sqlQuery, idFilm, idGenre) > 0;
@@ -100,8 +100,8 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public boolean addLikeFilm(Integer idFilm, Integer idUser){
-        if(!findLikeUserToFilm(idFilm, idUser)){
+    public boolean addLikeFilm(Integer idFilm, Integer idUser) {
+        if (!findLikeUserToFilm(idFilm, idUser)) {
             String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", idFilm, idUser);
 
             return jdbcTemplate.update(sqlQuery) == 1;
@@ -111,9 +111,9 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public List<Film> listMostPopularFilms(int limit){
+    public List<Film> listMostPopularFilms(int limit) {
         Collection<Film> listAllFilms = findAll();
-        for(Film film : listAllFilms){
+        for (Film film : listAllFilms) {
             String sqlQueryFindLike = String.format("" +
                     "SELECT COUNT(*)\n" +
                     "FROM USER_LIKE_FILM\n" +
@@ -134,13 +134,13 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "    FROM FILMS ORDER BY FILM_RATE_AND_LIKES DESC LIMIT %d", limit);
         List<Integer> listIdFilms = jdbcTemplate.queryForList(sqlQuery, Integer.class);
 
-        if(listIdFilms.size() < 1){
+        if (listIdFilms.size() < 1) {
             throw new IncorrectParameterException("Список популярных фильмов пуст");
         }
 
-        for(Integer id : listIdFilms){
+        for (Integer id : listIdFilms) {
             mostPopularFilms.add(findFilm(id)
-                    .orElseThrow(() ->new FilmNotFoundException("Фильм с идентификатором " + id + " не найден.")));
+                    .orElseThrow(() -> new FilmNotFoundException("Фильм с идентификатором " + id + " не найден.")));
         }
 
         return mostPopularFilms;
@@ -148,7 +148,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
 
     @Override
     public boolean deleteLike(Integer idFilm, Integer idUser) {
-        if(findLikeUserToFilm(idFilm, idUser)){
+        if (findLikeUserToFilm(idFilm, idUser)) {
             String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
 
             return jdbcTemplate.update(sqlQuery, idFilm, idUser) > 0;
@@ -158,14 +158,33 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public List<Genre> getGenresFilm(Integer idFilm){
+    public boolean deleteFilm(Integer idFilm) {
+        String sqlQuery = String.format("delete\n" +
+                "from FILM_TO_GENRE\n" +
+                "where FILM_ID = %d", idFilm);
+        System.out.println("sqlQuery = " + sqlQuery);
+        jdbcTemplate.update(sqlQuery);
+
+        sqlQuery = String.format("delete\n" +
+                "from USER_LIKE_FILM\n" +
+                "where FILM_ID = %d", idFilm);
+        jdbcTemplate.update(sqlQuery);
+
+        sqlQuery = String.format("delete\n" +
+                "from FILMS\n" +
+                "where FILM_ID = %d", idFilm);
+        return jdbcTemplate.update(sqlQuery) > 0;
+    }
+
+    @Override
+    public List<Genre> getGenresFilm(Integer idFilm) {
         String sqlQuery = String.format("select GENRE_ID\n" +
                 "from FILM_TO_GENRE\n" +
                 "where FILM_ID = %d", idFilm);
         List<Integer> idGenres = jdbcTemplate.queryForList(sqlQuery, Integer.class);
         List<Genre> genreList = new ArrayList<>();
 
-        for (Integer id : idGenres){
+        for (Integer id : idGenres) {
             genreList.add(new Genre(id, genreDbStorage.findNameGenre(id)));
         }
 
@@ -188,7 +207,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 
-    private Integer getRateAndLikeFilm(Integer idFilm){
+    private Integer getRateAndLikeFilm(Integer idFilm) {
         String sqlQuery = String.format("select FILM_RATE_AND_LIKES\n" +
                 "from FILMS\n" +
                 "where FILM_ID = %d", idFilm);
@@ -209,7 +228,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 , resultSet.getInt("FILM_DURATION")
                 , resultSet.getInt("FILM_RATE")
                 , new Mpa(
-                        resultSet.getInt("MPA_ID"), mpaDbStorage.findNameMpa(resultSet.getInt("MPA_ID")))
+                resultSet.getInt("MPA_ID"), mpaDbStorage.findNameMpa(resultSet.getInt("MPA_ID")))
                 , new ArrayList<>());
 
         film.setId(resultSet.getInt("FILM_ID"));
