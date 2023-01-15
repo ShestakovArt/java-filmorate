@@ -25,7 +25,7 @@ public class GenreService {
     }
 
     public Genre getGenre(Integer id) {
-        return new Genre(id, genreDbStorage.findNameGenre(id));
+        return genreDbStorage.findGenreById(id);
     }
 
     public boolean setFilmGenre(Integer idFilm, Integer idGenre) {

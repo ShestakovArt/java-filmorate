@@ -12,10 +12,18 @@ import java.util.Optional;
 @Component
 public interface FilmDbStorage {
     int addFilm(Film film);
+
     void upgradeFilm(Film film);
+
     Optional<Film> findFilm(Integer id);
+
     Collection<Film> findAll();
+
     boolean addLikeFilm(Integer idFilm, Integer idUser);
+
     List<Film> listMostPopularFilms(int limit);
+
     boolean deleteLike(Integer idFilm, Integer idUser);
+
+    Collection<Film> findDirectorSortedFilms(Integer directorId, String[] sortBy);
 }

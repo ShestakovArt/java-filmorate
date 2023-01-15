@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
@@ -12,8 +14,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Component
+@Slf4j
 public class GenreDbStorageImpl implements GenreDbStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -24,16 +28,14 @@ public class GenreDbStorageImpl implements GenreDbStorage {
     }
 
     @Override
-    public String findNameGenre(Integer id) {
-        String sqlQuery = String.format("select GENRE_NAME " +
-                "from GENRE where GENRE_ID = %d", id);
-        List<String> nameList = jdbcTemplate.queryForList(sqlQuery, String.class);
-
-        if (nameList.size() != 1) {
+    public Genre findGenreById(Integer id) {
+        try {
+            String sqlQuery = "select GENRE_ID, GENRE_NAME from GENRE where GENRE_ID = ?";
+            return Optional.of(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, id)).get();
+        } catch (EmptyResultDataAccessException e) {
+            log.info("Не коректный ID GENRE");
             throw new ValidationException("Не коректный ID GENRE");
         }
-
-        return nameList.get(0);
     }
 
     @Override
@@ -59,7 +61,7 @@ public class GenreDbStorageImpl implements GenreDbStorage {
         List<Genre> genreList = new ArrayList<>();
 
         for (Integer id : idGenres) {
-            genreList.add(new Genre(id, findNameGenre(id)));
+            genreList.add(findGenreById(id));
         }
 
         return genreList;
@@ -67,13 +69,20 @@ public class GenreDbStorageImpl implements GenreDbStorage {
 
     @Override
     public boolean setFilmGenre(Integer idFilm, Integer idGenre) {
-        if (!findGenreToFilm(idFilm, idGenre)) {
-            String sqlQuery = String.format("INSERT INTO FILM_TO_GENRE VALUES (%d, %d)", idFilm, idGenre);
-
-            return jdbcTemplate.update(sqlQuery) == 1;
+        Genre genreById = findGenreById(idGenre);
+        if (genreById == null) {
+            return false;
+        } else if (!findGenreToFilm(idFilm, idGenre)) {
+            try {
+                String sqlQuery = String.format("INSERT INTO FILM_TO_GENRE VALUES (%d, %d)", idFilm, idGenre);
+                return jdbcTemplate.update(sqlQuery) == 1;
+            } catch (Exception e) {
+                log.info(e.getMessage());
+                return false;
+            }
+        } else {
+            return true;
         }
-
-        return true;
     }
 
     @Override
@@ -87,7 +96,6 @@ public class GenreDbStorageImpl implements GenreDbStorage {
         return false;
     }
 
-
     private boolean findGenreToFilm(Integer idFilm, Integer idGenre) {
         String sqlQuery = String.format("select COUNT(*)\n" +
                 "from FILM_TO_GENRE\n" +
@@ -95,6 +103,4 @@ public class GenreDbStorageImpl implements GenreDbStorage {
 
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
-
-
 }
