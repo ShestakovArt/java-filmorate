@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
 import ru.yandex.practicum.filmorate.dao.MpaDbStorage;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.DirectorService;
@@ -52,14 +53,13 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = "update FILMS set " +
                 "FILM_NAME = ?, MPA_ID = ?, FILM_DESCRIPTION = ? , FILM_RELEASE_DATE = ?, FILM_DURATION = ?, FILM_RATE = ?" +
                 "where FILM_ID = ?";
-
         jdbcTemplate.update(sqlQuery
                 , film.getName()
                 , film.getMpa().getId()
                 , film.getDescription()
                 , film.getReleaseDate()
                 , film.getDuration()
-                , film.getRate()
+                , getRateAndLikeFilm(film.getId())
                 , film.getId());
     }
 
@@ -109,30 +109,24 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                     "FROM USER_LIKE_FILM\n" +
                     "WHERE FILM_ID = %d", film.getId());
             List<Integer> countLikeToFilm = jdbcTemplate.queryForList(sqlQueryFindLike, Integer.class);
-            film.setRateAndLikes(film.getRate() + countLikeToFilm.get(0));
             String sqlQueryUpdateFilm = "update FILMS set " +
-                    "FILM_RATE_AND_LIKES = ? " +
+                    "FILM_RATE = ? " +
                     "where FILM_ID = ?";
-
             jdbcTemplate.update(sqlQueryUpdateFilm
-                    , film.getRateAndLikes()
+                    , countLikeToFilm.get(0)
                     , film.getId());
         }
-
         List<Film> mostPopularFilms = new ArrayList<>();
         String sqlQuery = String.format("SELECT FILM_ID\n" +
-                "    FROM FILMS ORDER BY FILM_RATE_AND_LIKES DESC LIMIT %d", limit);
+                " FROM FILMS ORDER BY FILM_RATE DESC LIMIT %d", limit);
         List<Integer> listfilmIds = jdbcTemplate.queryForList(sqlQuery, Integer.class);
-
         if (listfilmIds.size() < 1) {
             throw new IncorrectParameterException("Список популярных фильмов пуст");
         }
-
         for (Integer id : listfilmIds) {
             mostPopularFilms.add(findFilm(id)
                     .orElseThrow(() -> new FilmNotFoundException("Фильм с идентификатором " + id + " не найден.")));
         }
-
         return mostPopularFilms;
     }
 
@@ -140,29 +134,27 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     public boolean deleteLike(Integer filmId, Integer userId) {
         if (findLikeUserToFilm(filmId, userId)) {
             String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
-
             return jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
         }
-
         return false;
     }
 
     @Override
     public boolean deleteFilm(Integer filmId) {
-
-
-
-
         String sqlQuery = String.format("delete\n" +
                 "from FILM_TO_GENRE\n" +
                 "where FILM_ID = %d", filmId);
-        System.out.println("sqlQuery = " + sqlQuery);
         jdbcTemplate.update(sqlQuery);
 
         sqlQuery = String.format("delete\n" +
                 "from USER_LIKE_FILM\n" +
                 "where FILM_ID = %d", filmId);
         jdbcTemplate.update(sqlQuery);
+
+        List<Director> filmDiretors = directorDbStorage.getFilmDirectors(filmId);
+        for (Director director : filmDiretors) {
+            directorDbStorage.deleteFilmDirector(filmId, director.getId());
+        }
 
         sqlQuery = String.format("delete\n" +
                 "from FILMS\n" +
@@ -174,10 +166,8 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     public boolean addLikeFilm(Integer filmId, Integer userId) {
         if (!findLikeUserToFilm(filmId, userId)) {
             String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", filmId, userId);
-
             return jdbcTemplate.update(sqlQuery) == 1;
         }
-
         return false;
     }
 
@@ -190,17 +180,11 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     private Integer getRateAndLikeFilm(Integer filmId) {
-        String sqlQuery = String.format("select FILM_RATE_AND_LIKES\n" +
-                "from FILMS\n" +
+        String sqlQuery = String.format("select COUNT(*)\n" +
+                "from USER_LIKE_FILM\n" +
                 "where FILM_ID = %d", filmId);
         List<Integer> countRateAndLike = jdbcTemplate.queryForList(sqlQuery, Integer.class);
-        if (countRateAndLike.size() > 0) {
-
-            return countRateAndLike.get(0);
-        } else {
-
-            return 0;
-        }
+        return countRateAndLike.get(0);
     }
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
@@ -211,11 +195,10 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         film.setDescription(resultSet.getString("FILM_DESCRIPTION"));
         film.setReleaseDate(resultSet.getString("FILM_RELEASE_DATE"));
         film.setDuration(resultSet.getInt("FILM_DURATION"));
-        film.setRate(resultSet.getInt("FILM_RATE"));
         Integer mpaId = resultSet.getInt("MPA_ID");
         film.setMpa(new Mpa(mpaId, mpaDbStorage.findNameMpa(mpaId)));
         film.setGenres(genreDbStorage.getFilmGenres(filmId));
-        film.setRateAndLikes(getRateAndLikeFilm(filmId));
+        film.setRate(getRateAndLikeFilm(filmId));
         film.setDirectors(directorDbStorage.getFilmDirectors(filmId));
         return film;
     }
