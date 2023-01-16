@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,4 +25,8 @@ public interface FilmDbStorage {
     boolean deleteLike(Integer idFilm, Integer idUser);
 
     Collection<Film> findDirectorSortedFilms(Integer directorId, String[] sortBy);
+
+    Collection<Film> findFilmsByDirector(String criteria);
+
+    Collection<Film> findFilmsByTitle(String criteria);
 }
