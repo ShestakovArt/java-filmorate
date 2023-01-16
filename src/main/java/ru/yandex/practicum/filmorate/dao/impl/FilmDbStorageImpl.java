@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -9,29 +10,31 @@ import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
 import ru.yandex.practicum.filmorate.dao.MpaDbStorage;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.service.GenreService;
-import ru.yandex.practicum.filmorate.service.MpaService;
+import ru.yandex.practicum.filmorate.service.DirectorService;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
 @Component
+@Slf4j
 public class FilmDbStorageImpl implements FilmDbStorage {
     private final JdbcTemplate jdbcTemplate;
     final MpaDbStorage mpaDbStorage;
     final GenreDbStorage genreDbStorage;
+    final DirectorService directorService;
 
     @Autowired
-    public FilmDbStorageImpl(JdbcTemplate jdbcTemplate, MpaDbStorage mpaDbStorage,
-                             GenreDbStorage genreDbStorage) {
+    public FilmDbStorageImpl(JdbcTemplate jdbcTemplate,
+                             MpaDbStorage mpaDbStorage,
+                             GenreDbStorage genreDbStorage,
+                             DirectorService directorService) {
         this.jdbcTemplate = jdbcTemplate;
         this.mpaDbStorage = mpaDbStorage;
         this.genreDbStorage = genreDbStorage;
+        this.directorService = directorService;
     }
 
     @Override
@@ -78,36 +81,22 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public boolean setGenreFilm(Integer idFilm, Integer idGenre) {
-        if (!findGenreToFilm(idFilm, idGenre)) {
-            String sqlQuery = String.format("INSERT INTO FILM_TO_GENRE VALUES (%d, %d)", idFilm, idGenre);
+    public Collection<Film> findDirectorSortedFilms(Integer directorId, String[] sortBy) {
+        StringBuilder sqlQuery = new StringBuilder("SELECT f.* FROM FILMS f ");
+        if (sortBy[0].equals("likes")) {
+            sqlQuery.append("left join (SELECT count(1) cnt, FILM_ID FROM USER_LIKE_FILM ulf GROUP BY FILM_ID) likes ON likes.FILM_ID=f.FILM_ID ");
+        }
+        sqlQuery.append("left join DIRECTOR_TO_FILM dtf on f.FILM_ID = dtf.FILM_ID ");
+        sqlQuery.append("left join DIRECTOR d on dtf.DIRECTOR_ID = d.DIRECTOR_ID ");
+        sqlQuery.append("WHERE d.DIRECTOR_ID=? ");
 
-            return jdbcTemplate.update(sqlQuery) == 1;
+        if (sortBy[0].equals("year")) {
+            sqlQuery.append("ORDER BY f.FILM_RELEASE_DATE");
+        } else {
+            sqlQuery.append("ORDER BY likes.cnt");
         }
 
-        return true;
-    }
-
-    @Override
-    public boolean deleteGenreFilm(Integer idFilm, Integer idGenre) {
-        if (findGenreToFilm(idFilm, idGenre)) {
-            String sqlQuery = "delete from FILM_TO_GENRE where FILM_ID = ? AND GENRE_ID = ?";
-
-            return jdbcTemplate.update(sqlQuery, idFilm, idGenre) > 0;
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean addLikeFilm(Integer idFilm, Integer idUser) {
-        if (!findLikeUserToFilm(idFilm, idUser)) {
-            String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", idFilm, idUser);
-
-            return jdbcTemplate.update(sqlQuery) == 1;
-        }
-
-        return false;
+        return jdbcTemplate.query(sqlQuery.toString(), this::mapRowToFilm, directorId);
     }
 
     @Override
@@ -177,26 +166,14 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public List<Genre> getGenresFilm(Integer idFilm) {
-        String sqlQuery = String.format("select GENRE_ID\n" +
-                "from FILM_TO_GENRE\n" +
-                "where FILM_ID = %d", idFilm);
-        List<Integer> idGenres = jdbcTemplate.queryForList(sqlQuery, Integer.class);
-        List<Genre> genreList = new ArrayList<>();
+    public boolean addLikeFilm(Integer idFilm, Integer idUser) {
+        if (!findLikeUserToFilm(idFilm, idUser)) {
+            String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", idFilm, idUser);
 
-        for (Integer id : idGenres) {
-            genreList.add(new Genre(id, genreDbStorage.findNameGenre(id)));
+            return jdbcTemplate.update(sqlQuery) == 1;
         }
 
-        return genreList;
-    }
-
-    private boolean findGenreToFilm(Integer idFilm, Integer idGenre) {
-        String sqlQuery = String.format("select COUNT(*)\n" +
-                "from FILM_TO_GENRE\n" +
-                "where FILM_ID = %d and GENRE_ID = %d", idFilm, idGenre);
-
-        return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
+        return false;
     }
 
     private boolean findLikeUserToFilm(Integer idFilm, Integer idUser) {
@@ -222,21 +199,19 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
-        Film film = new Film(resultSet.getString("FILM_NAME")
-                , resultSet.getString("FILM_DESCRIPTION")
-                , resultSet.getString("FILM_RELEASE_DATE")
-                , resultSet.getInt("FILM_DURATION")
-                , resultSet.getInt("FILM_RATE")
-                , new Mpa(
-                resultSet.getInt("MPA_ID"), mpaDbStorage.findNameMpa(resultSet.getInt("MPA_ID")))
-                , new ArrayList<>());
-
-        film.setId(resultSet.getInt("FILM_ID"));
-        film.setMpa(new Mpa(
-                film.getMpa().getId(), mpaDbStorage.findNameMpa(film.getMpa().getId())));
-        film.setGenres(getGenresFilm(film.getId()));
-        film.setRateAndLikes(getRateAndLikeFilm(film.getId()));
-
+        Film film = new Film();
+        Integer filmId = resultSet.getInt("FILM_ID");
+        film.setId(filmId);
+        film.setName(resultSet.getString("FILM_NAME"));
+        film.setDescription(resultSet.getString("FILM_DESCRIPTION"));
+        film.setReleaseDate(resultSet.getString("FILM_RELEASE_DATE"));
+        film.setDuration(resultSet.getInt("FILM_DURATION"));
+        film.setRate(resultSet.getInt("FILM_RATE"));
+        Integer mpaId = resultSet.getInt("MPA_ID");
+        film.setMpa(new Mpa(mpaId, mpaDbStorage.findNameMpa(mpaId)));
+        film.setGenres(genreDbStorage.getFilmGenres(filmId));
+        film.setRateAndLikes(getRateAndLikeFilm(filmId));
+        film.setDirectors(directorService.getFilmDirectors(filmId));
         return film;
     }
 }
