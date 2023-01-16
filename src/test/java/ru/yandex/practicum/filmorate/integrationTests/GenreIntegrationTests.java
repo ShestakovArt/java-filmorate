@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@FieldDefaults(level= AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class GenreIntegrationTests {
     final GenreDbStorage genreDbStorage;
 
@@ -29,8 +29,8 @@ public class GenreIntegrationTests {
         nameGenre.add("Триллер");
         nameGenre.add("Документальный");
         nameGenre.add("Боевик");
-        for (int i = 0; i < nameGenre.size(); i++){
-            assertTrue(genreDbStorage.findNameGenre(i+1).equals(nameGenre.get(i)), "Не корректное название жанра");
+        for (int i = 0; i < nameGenre.size(); i++) {
+            assertTrue(genreDbStorage.findGenreById(i + 1).getName().equals(nameGenre.get(i)), "Не корректное название жанра");
         }
     }
 

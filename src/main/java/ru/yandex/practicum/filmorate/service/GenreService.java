@@ -16,15 +16,27 @@ public class GenreService {
     final GenreDbStorage genreDbStorage;
 
     @Autowired
-    public GenreService(GenreDbStorageImpl genreDbStorage){
+    public GenreService(GenreDbStorageImpl genreDbStorage) {
         this.genreDbStorage = genreDbStorage;
     }
 
-    public Collection<Genre> getGenreList(){
+    public Collection<Genre> getGenreList() {
         return genreDbStorage.findAll();
     }
 
-    public Genre getGenre(Integer id){
-        return new Genre(id, genreDbStorage.findNameGenre(id));
+    public Genre getGenre(Integer id) {
+        return genreDbStorage.findGenreById(id);
+    }
+
+    public boolean setFilmGenre(Integer idFilm, Integer idGenre) {
+        return genreDbStorage.setFilmGenre(idFilm, idGenre);
+    }
+
+    public boolean deleteFilmGenre(Integer idFilm, Integer idGenre) {
+        return genreDbStorage.deleteFilmGenre(idFilm, idGenre);
+    }
+
+    public List<Genre> getFilmGenres(Integer idFilm) {
+        return genreDbStorage.getFilmGenres(idFilm);
     }
 }
