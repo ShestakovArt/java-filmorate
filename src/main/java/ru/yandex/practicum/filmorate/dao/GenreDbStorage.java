@@ -12,9 +12,9 @@ public interface GenreDbStorage {
 
     Collection<Genre> findAll();
 
-    List<Genre> getFilmGenres(Integer idFilm);
+    List<Genre> getFilmGenres(Integer filmId);
 
-    boolean deleteFilmGenre(Integer idFilm, Integer idGenre);
+    boolean deleteFilmGenre(Integer filmId, Integer idGenre);
 
-    boolean setFilmGenre(Integer idFilm, Integer idGenre);
+    boolean setFilmGenre(Integer filmId, Integer idGenre);
 }

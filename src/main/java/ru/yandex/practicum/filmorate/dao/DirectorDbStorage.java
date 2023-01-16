@@ -23,5 +23,5 @@ public interface DirectorDbStorage {
 
     void addFilmDirector(Integer filmId, Integer directorId);
 
-    List<Director> getFilmDirectors(Integer idFilm);
+    List<Director> getFilmDirectors(Integer filmId);
 }

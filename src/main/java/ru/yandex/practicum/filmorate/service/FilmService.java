@@ -118,14 +118,14 @@ public class FilmService {
         }
     }
 
-    public void deleteLikeFilm(Integer idFilm, Integer idUser) {
-        if (idFilm < 1) {
+    public void deleteLikeFilm(Integer filmId, Integer userId) {
+        if (filmId < 1) {
             throw new FilmNotFoundException("Id фильма должно быть больше 0");
         }
-        if (idUser < 1) {
+        if (userId < 1) {
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
-        if (!filmDbStorage.deleteLike(idFilm, idUser)) {
+        if (!filmDbStorage.deleteLike(filmId, userId)) {
             throw new IncorrectParameterException("Не корректный запрос на удаление лайка");
         }
     }
@@ -138,10 +138,14 @@ public class FilmService {
         return filmDbStorage.listMostPopularFilms(count);
     }
 
-    public void deleteFilm(int idFilm) {
-        if(idFilm < 1){
+    public void deleteFilm(int filmId) {
+        if (filmId < 1) {
             throw new FilmNotFoundException("Id фильма должно быть больше 0");
         }
-        filmDbStorage.deleteFilm(idFilm);
+        List<Director> listFilmDirectors = directorService.getFilmDirectors(filmId);
+        for (Director director : listFilmDirectors) {
+            directorService.deleteFilmDirector(filmId, director.getId());
+        }
+        filmDbStorage.deleteFilm(filmId);
     }
 }

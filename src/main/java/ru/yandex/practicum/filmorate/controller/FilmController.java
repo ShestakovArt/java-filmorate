@@ -87,7 +87,7 @@ public class FilmController {
     }
 
     @DeleteMapping(pathId)
-    public ResponseEntity<User> deleteUser(@PathVariable int id){
+    public ResponseEntity<Film> deleteFilm(@PathVariable int id){
         filmService.deleteFilm(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
