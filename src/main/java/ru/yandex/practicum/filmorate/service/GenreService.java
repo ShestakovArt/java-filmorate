@@ -28,15 +28,15 @@ public class GenreService {
         return genreDbStorage.findGenreById(id);
     }
 
-    public boolean setFilmGenre(Integer idFilm, Integer idGenre) {
-        return genreDbStorage.setFilmGenre(idFilm, idGenre);
+    public boolean setFilmGenre(Integer filmId, Integer idGenre) {
+        return genreDbStorage.setFilmGenre(filmId, idGenre);
     }
 
-    public boolean deleteFilmGenre(Integer idFilm, Integer idGenre) {
-        return genreDbStorage.deleteFilmGenre(idFilm, idGenre);
+    public boolean deleteFilmGenre(Integer filmId, Integer idGenre) {
+        return genreDbStorage.deleteFilmGenre(filmId, idGenre);
     }
 
-    public List<Genre> getFilmGenres(Integer idFilm) {
-        return genreDbStorage.getFilmGenres(idFilm);
+    public List<Genre> getFilmGenres(Integer filmId) {
+        return genreDbStorage.getFilmGenres(filmId);
     }
 }

@@ -78,22 +78,36 @@ public class UserDbStorageImpl implements UserDbStorage {
     }
 
     @Override
-    public List<Integer> findAllFriends(Integer idUser) {
+    public List<Integer> findAllFriends(Integer userId) {
         String sqlQuery = String.format("select RECIPIENT_ID as friends\n" +
                 "from FRIENDSHIP_REQUESTS\n" +
-                "where SENDER_ID = %d", idUser, idUser);
+                "where SENDER_ID = %d", userId);
 
         return jdbcTemplate.queryForList(sqlQuery, Integer.class);
     }
 
     @Override
-    public boolean deleteFriends(Integer idUser, Integer idFriend) {
+    public boolean deleteFriends(Integer userId, Integer idFriend) {
         String sqlQuery = String.format("delete\n" +
                 "from FRIENDSHIP_REQUESTS\n" +
-                "where SENDER_ID = %d and RECIPIENT_ID = %d", idUser, idFriend);
+                "where SENDER_ID = %d and RECIPIENT_ID = %d", userId, idFriend);
 
         return jdbcTemplate.update(sqlQuery) > 0;
     }
+
+    @Override
+    public boolean deleteUser(Integer userId) {
+        String sqlQuery = String.format("delete\n" +
+                "from FRIENDSHIP_REQUESTS\n" +
+                "where RECIPIENT_ID = %d", userId);
+        jdbcTemplate.update(sqlQuery);
+
+         sqlQuery = String.format("delete\n" +
+                "from USERS\n" +
+                "where USER_ID = %d", userId);
+        return jdbcTemplate.update(sqlQuery) > 0;
+    }
+
 
     private boolean findRequestsFriendship(Integer firstId, Integer secondId) {
         String sqlQuery = String.format("select COUNT(*)\n" +

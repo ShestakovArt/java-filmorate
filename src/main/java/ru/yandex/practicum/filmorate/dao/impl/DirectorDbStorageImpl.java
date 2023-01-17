@@ -96,10 +96,10 @@ public class DirectorDbStorageImpl implements DirectorDbStorage {
     }
 
     @Override
-    public List<Director> getFilmDirectors(Integer idFilm) {
+    public List<Director> getFilmDirectors(Integer filmId) {
         String sqlQuery = String.format("select DIRECTOR_ID " +
                 "from DIRECTOR_TO_FILM\n" +
-                "where FILM_ID = %d", idFilm);
+                "where FILM_ID = %d", filmId);
 
         List<Director> directors = new ArrayList<>();
 
