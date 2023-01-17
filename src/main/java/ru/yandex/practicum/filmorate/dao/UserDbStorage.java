@@ -10,10 +10,18 @@ import java.util.Optional;
 @Component
 public interface UserDbStorage {
     int addUser(User user);
+
     void upgradeUser(User user);
+
     Optional<User> findUser(Integer id);
+
     Collection<User> findAll();
-    boolean addRequestsFriendship(Integer idUser, Integer idFriend);
-    boolean deleteFriends(Integer idUser, Integer idFriend);
-    List<Integer> findAllFriends(Integer idUser);
+
+    boolean addRequestsFriendship(Integer userId, Integer idFriend);
+
+    boolean deleteFriends(Integer userId, Integer idFriend);
+
+    boolean deleteUser(Integer userId);
+
+    List<Integer> findAllFriends(Integer userId);
 }

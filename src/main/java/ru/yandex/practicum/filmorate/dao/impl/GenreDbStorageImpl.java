@@ -53,10 +53,10 @@ public class GenreDbStorageImpl implements GenreDbStorage {
     }
 
     @Override
-    public List<Genre> getFilmGenres(Integer idFilm) {
+    public List<Genre> getFilmGenres(Integer filmId) {
         String sqlQuery = String.format("select GENRE_ID\n" +
                 "from FILM_TO_GENRE\n" +
-                "where FILM_ID = %d", idFilm);
+                "where FILM_ID = %d", filmId);
         List<Integer> idGenres = jdbcTemplate.queryForList(sqlQuery, Integer.class);
         List<Genre> genreList = new ArrayList<>();
 
@@ -68,13 +68,13 @@ public class GenreDbStorageImpl implements GenreDbStorage {
     }
 
     @Override
-    public boolean setFilmGenre(Integer idFilm, Integer idGenre) {
+    public boolean setFilmGenre(Integer filmId, Integer idGenre) {
         Genre genreById = findGenreById(idGenre);
         if (genreById == null) {
             return false;
-        } else if (!findGenreToFilm(idFilm, idGenre)) {
+        } else if (!findGenreToFilm(filmId, idGenre)) {
             try {
-                String sqlQuery = String.format("INSERT INTO FILM_TO_GENRE VALUES (%d, %d)", idFilm, idGenre);
+                String sqlQuery = String.format("INSERT INTO FILM_TO_GENRE VALUES (%d, %d)", filmId, idGenre);
                 return jdbcTemplate.update(sqlQuery) == 1;
             } catch (Exception e) {
                 log.info(e.getMessage());
@@ -86,20 +86,20 @@ public class GenreDbStorageImpl implements GenreDbStorage {
     }
 
     @Override
-    public boolean deleteFilmGenre(Integer idFilm, Integer idGenre) {
-        if (findGenreToFilm(idFilm, idGenre)) {
+    public boolean deleteFilmGenre(Integer filmId, Integer idGenre) {
+        if (findGenreToFilm(filmId, idGenre)) {
             String sqlQuery = "delete from FILM_TO_GENRE where FILM_ID = ? AND GENRE_ID = ?";
 
-            return jdbcTemplate.update(sqlQuery, idFilm, idGenre) > 0;
+            return jdbcTemplate.update(sqlQuery, filmId, idGenre) > 0;
         }
 
         return false;
     }
 
-    private boolean findGenreToFilm(Integer idFilm, Integer idGenre) {
+    private boolean findGenreToFilm(Integer filmId, Integer idGenre) {
         String sqlQuery = String.format("select COUNT(*)\n" +
                 "from FILM_TO_GENRE\n" +
-                "where FILM_ID = %d and GENRE_ID = %d", idFilm, idGenre);
+                "where FILM_ID = %d and GENRE_ID = %d", filmId, idGenre);
 
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
