@@ -177,7 +177,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         return jdbcTemplate.query(
                 findFilmsByDirectorsNameMatchesCriteria,
                 this::mapRowToFilm,
-                wrapCriteria(criteria)
+                String.format("%%%s%%", criteria)
         );
     }
 
@@ -186,12 +186,8 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         return jdbcTemplate.query(
                 findFilmsByTitleMatchesCriteria,
                 this::mapRowToFilm,
-                wrapCriteria(criteria)
+                String.format("%%%s%%", criteria)
         );
-    }
-
-    private String wrapCriteria(String criteria) {
-        return '%' + criteria + '%';
     }
 
     private boolean findLikeUserToFilm(Integer idFilm, Integer idUser) {
