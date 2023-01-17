@@ -33,39 +33,39 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{id}")
-    public void remove(@PathVariable("id") Long reviewId) {
+    public void remove(@PathVariable("id") Integer reviewId) {
         reviewService.remove(reviewId);
     }
 
     @GetMapping("/{id}")
-    public Review getReview(@PathVariable("id") Long reviewId) {
+    public Review getReview(@PathVariable("id") Integer reviewId) {
         return reviewService.getReviewById(reviewId);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(
-            @PathVariable("id") Long reviewId,
+            @PathVariable("id") Integer reviewId,
             @PathVariable("userId") Integer userId) {
         reviewService.addLike(reviewId, userId, LikeStatus.LIKE);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
     public void addDislike(
-            @PathVariable("id") Long reviewId,
+            @PathVariable("id") Integer reviewId,
             @PathVariable("userId") Integer userId) {
         reviewService.addLike(reviewId, userId, LikeStatus.DISLIKE);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void removeLike(
-            @PathVariable("id") Long reviewId,
+            @PathVariable("id") Integer reviewId,
             @PathVariable("userId") Integer userId) {
         reviewService.removeLike(reviewId, userId, LikeStatus.LIKE);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
     public void removeDislike(
-            @PathVariable("id") Long reviewId,
+            @PathVariable("id") Integer reviewId,
             @PathVariable("userId") Integer userId) {
         reviewService.removeLike(reviewId, userId, LikeStatus.DISLIKE);
     }

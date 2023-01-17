@@ -14,13 +14,13 @@ public interface ReviewDbStorage {
 
     Review update(Review review);
 
-    void remove(Long reviewId);
+    void remove(Integer reviewId);
 
-    Review getReviewById(Long reviewId);
+    Review getReviewById(Integer reviewId);
 
-    void addUseful(long reviewId);
+    void addUseful(Integer reviewId);
 
-    void subUseful(long reviewId);
+    void subUseful(Integer reviewId);
 
-    boolean isReviewExist(long reviewId);
+    boolean isReviewExist(Integer reviewId);
 }

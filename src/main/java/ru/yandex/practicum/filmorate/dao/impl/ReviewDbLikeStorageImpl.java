@@ -16,7 +16,7 @@ public class ReviewDbLikeStorageImpl implements ReviewDbLikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void addLike(final long reviewId, final Integer userId, LikeStatus likeStatus) {
+    public void addLike(final Integer reviewId, final Integer userId, LikeStatus likeStatus) {
         boolean status = likeStatus.getBoolean();
         if (checkLike(reviewId, userId, status) >= 0) {
             String sql = "INSERT INTO REVIEW_LIKES (REVIEW_ID, USER_ID, STATUS) " +
@@ -31,7 +31,7 @@ public class ReviewDbLikeStorageImpl implements ReviewDbLikeStorage {
     }
 
     @Override
-    public void removeLike(final long reviewId, final Integer userId, LikeStatus likeStatus) {
+    public void removeLike(final Integer reviewId, final Integer userId, LikeStatus likeStatus) {
         boolean status = likeStatus.getBoolean();
         if (checkLike(reviewId, userId, status) > 0) {
             String sql = "DELETE FROM REVIEW_LIKES " +
@@ -45,7 +45,7 @@ public class ReviewDbLikeStorageImpl implements ReviewDbLikeStorage {
         }
     }
 
-    private int checkLike(final long reviewId, final long userId, boolean likeStatus) {
+    private int checkLike(final Integer reviewId, final long userId, boolean likeStatus) {
         String sql = "SELECT COUNT(*) FROM REVIEW_LIKES WHERE " +
                 " REVIEW_ID = ? AND USER_ID = ? AND STATUS = ?;";
 

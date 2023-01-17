@@ -24,7 +24,7 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
 
     private Review makeReview(ResultSet rs, int rowNum) throws SQLException {
         Review review = new Review();
-        review.setReviewId(rs.getLong("REVIEW_ID"));
+        review.setReviewId(rs.getInt("REVIEW_ID"));
         review.setContent(rs.getString("CONTENT"));
         review.setIsPositive(rs.getBoolean("POSITIVE"));
         review.setUseful(rs.getInt("USEFUL"));
@@ -75,7 +75,7 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
                 }
                 , keyHolder);
 
-        review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         log.info("Создать отзыв: {}.", review.getReviewId());
         return review;
     }
@@ -95,7 +95,7 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
     }
 
     @Override
-    public void remove(Long reviewId) {
+    public void remove(Integer reviewId) {
             String sql = "DELETE FROM REVIEW_LIKES WHERE REVIEW_ID = ? ;";
             jdbcTemplate.update(sql, reviewId);
             sql = "DELETE FROM REVIEWS WHERE REVIEW_ID = ? ;";
@@ -103,26 +103,26 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
     }
 
     @Override
-    public Review getReviewById(Long reviewId) {
+    public Review getReviewById(Integer reviewId) {
             String sql = "SELECT * FROM REVIEWS WHERE REVIEW_ID = ?;";
             List<Review> reviews = jdbcTemplate.query(sql, this::makeReview, reviewId);
             return reviews.get(0);
     }
 
     @Override
-    public void addUseful(long reviewId) {
+    public void addUseful(Integer reviewId) {
         String sql = "UPDATE REVIEWS SET USEFUL = USEFUL + 1 WHERE REVIEW_ID = ?; ";
         jdbcTemplate.update(sql, reviewId);
     }
 
     @Override
-    public void subUseful(long reviewId) {
+    public void subUseful(Integer reviewId) {
         String sql = "UPDATE REVIEWS SET USEFUL = USEFUL - 1 WHERE REVIEW_ID = ?; ";
         jdbcTemplate.update(sql, reviewId);
     }
 
     @Override
-    public boolean isReviewExist(long reviewId) {
+    public boolean isReviewExist(Integer reviewId) {
         String sql = "SELECT COUNT(*) FROM REVIEWS WHERE REVIEW_ID = ? ;";
         int reviewCount = jdbcTemplate.queryForObject(sql, Integer.class, reviewId);
 

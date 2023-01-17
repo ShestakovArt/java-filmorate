@@ -52,7 +52,7 @@ public class ReviewService {
         }
     }
 
-    public void remove(Long reviewId) {
+    public void remove(Integer reviewId) {
         if (reviewStorage.isReviewExist(reviewId)) {
         reviewStorage.remove(reviewId);
         } else {
@@ -60,7 +60,7 @@ public class ReviewService {
         }
     }
 
-    public Review getReviewById(Long reviewId) {
+    public Review getReviewById(Integer reviewId) {
         if (reviewStorage.isReviewExist(reviewId)) {
         return reviewStorage.getReviewById(reviewId);
         } else {
@@ -68,17 +68,17 @@ public class ReviewService {
         }
     }
 
-    public void addLike(Long reviewId, Integer userId, LikeStatus likeStatus) {
+    public void addLike(Integer reviewId, Integer userId, LikeStatus likeStatus) {
         checkNotFound(reviewId, userId);
         reviewLikeStorage.addLike(reviewId, userId, likeStatus);
     }
 
-    public void removeLike(Long reviewId, Integer userId, LikeStatus likeStatus) {
+    public void removeLike(Integer reviewId, Integer userId, LikeStatus likeStatus) {
         checkNotFound(reviewId, userId);
         reviewLikeStorage.removeLike(reviewId, userId, likeStatus);
     }
 
-    public void checkNotFound (Long reviewId, Integer userId) {
+    public void checkNotFound (Integer reviewId, Integer userId) {
         if (!reviewStorage.isReviewExist(reviewId)) {
             throw new ReviewNotFoundException("Отзыв с таким идентификатором не найден.");
         }
