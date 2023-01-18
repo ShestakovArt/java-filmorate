@@ -136,39 +136,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         if (findLikeUserToFilm(filmId, userId)) {
             String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
             return jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean deleteFilm(Integer filmId) {
-        String sqlQuery = String.format("delete\n" +
-                "from FILM_TO_GENRE\n" +
-                "where FILM_ID = %d", filmId);
-        jdbcTemplate.update(sqlQuery);
-
-        sqlQuery = String.format("delete\n" +
-                "from USER_LIKE_FILM\n" +
-                "where FILM_ID = %d", filmId);
-        jdbcTemplate.update(sqlQuery);
-
-        List<Director> filmDiretors = directorDbStorage.getFilmDirectors(filmId);
-        for (Director director : filmDiretors) {
-            directorDbStorage.deleteFilmDirector(filmId, director.getId());
-        }
-
-        sqlQuery = String.format("delete\n" +
-                "from FILMS\n" +
-                "where FILM_ID = %d", filmId);
-        return jdbcTemplate.update(sqlQuery) > 0;
-    }
-
-    @Override
-    public boolean addLikeFilm(Integer filmId, Integer userId) {
-        if (!findLikeUserToFilm(filmId, userId)) {
-            String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", filmId, userId);
-            return jdbcTemplate.update(sqlQuery) == 1;
-        }
+            }
         return false;
     }
 
@@ -213,12 +181,45 @@ public class FilmDbStorageImpl implements FilmDbStorage {
             tempListFilm.add(tempFilm);
         }
         return tempListFilm;
+}
+    @Override
+    public boolean deleteFilm(Integer filmId) {
+        String sqlQuery = String.format("delete\n" +
+                "from FILM_TO_GENRE\n" +
+                "where FILM_ID = %d", filmId);
+        jdbcTemplate.update(sqlQuery);
+
+        sqlQuery = String.format("delete\n" +
+                "from USER_LIKE_FILM\n" +
+                "where FILM_ID = %d", filmId);
+        jdbcTemplate.update(sqlQuery);
+
+        List<Director> filmDiretors = directorDbStorage.getFilmDirectors(filmId);
+        for (Director director : filmDiretors) {
+            directorDbStorage.deleteFilmDirector(filmId, director.getId());
+        }
+
+        sqlQuery = String.format("delete\n" +
+                "from FILMS\n" +
+                "where FILM_ID = %d", filmId);
+        return jdbcTemplate.update(sqlQuery) > 0;
+    }
+
+    @Override
+    public boolean addLikeFilm(Integer filmId, Integer userId) {
+        if (!findLikeUserToFilm(filmId, userId)) {
+            String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", filmId, userId);
+            return jdbcTemplate.update(sqlQuery) == 1;
+        }
+        return false;
+
     }
 
     private boolean findLikeUserToFilm(Integer filmId, Integer userId) {
         String sqlQuery = String.format("select COUNT(*)\n" +
                 "from USER_LIKE_FILM\n" +
                 "where FILM_ID = %d and USER_ID = %d", filmId, userId);
+
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 

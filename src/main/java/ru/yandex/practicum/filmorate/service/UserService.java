@@ -30,7 +30,6 @@ public class UserService {
         return user;
     }
 
-
     public void deleteUser(Integer userId) {
         if (userId < 1) {
             throw new UserNotFoundException("Id пользователя должно быть больше 0");

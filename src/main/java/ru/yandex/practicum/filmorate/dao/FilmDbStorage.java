@@ -20,11 +20,11 @@ public interface FilmDbStorage {
 
     boolean deleteFilm(Integer filmId);
 
-    boolean addLikeFilm(Integer idFilm, Integer idUser);
+    List<Film> getRecommendations(int userId);
+
+    boolean addLikeFilm(Integer filmId, Integer userId);
 
     List<Film> listMostPopularFilms(int limit);
-
-    List<Film> getRecommendations(int userId);
 
     boolean deleteLike(Integer filmId, Integer userId);
 

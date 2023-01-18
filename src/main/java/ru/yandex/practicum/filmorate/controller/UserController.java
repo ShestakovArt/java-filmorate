@@ -99,7 +99,6 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-
     @GetMapping(pathRecommendations)
     public ResponseEntity<List<Film>> getRecommendations(@PathVariable Integer id) {
         userService.getUser(id);
