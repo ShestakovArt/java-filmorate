@@ -110,9 +110,10 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
                 , review.getIsPositive()
                 , review.getReviewId()
         );
-        userDbStorage.recordEvent(review.getUserId(), review.getReviewId(), REVIEW, UPDATE);
+        Review reviewUpdate = getReviewById(review.getReviewId());
+        userDbStorage.recordEvent(reviewUpdate.getUserId(), reviewUpdate.getReviewId(), REVIEW, UPDATE);
 
-        return getReviewById(review.getReviewId());
+        return reviewUpdate;
     }
 
     @Override
