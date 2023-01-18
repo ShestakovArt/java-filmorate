@@ -175,7 +175,7 @@ public class FilmIntegrationTests {
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(film ->
-                        assertThat(film).hasFieldOrPropertyWithValue("rateAndLikes", film.getRate() + 1)
+                        assertThat(film).hasFieldOrPropertyWithValue("rate", film.getRate())
                 );
 
         filmList = filmDbStorage.listMostPopularFilms(2);
@@ -185,17 +185,17 @@ public class FilmIntegrationTests {
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(film ->
-                        assertThat(film).hasFieldOrPropertyWithValue("rateAndLikes", film.getRate())
+                        assertThat(film).hasFieldOrPropertyWithValue("rate", film.getRate())
                 );
     }
 
-    void checkFindFilmById(Integer idFilm) {
-        Optional<Film> filmOptional = filmDbStorage.findFilm(idFilm);
+    void checkFindFilmById(Integer filmId) {
+        Optional<Film> filmOptional = filmDbStorage.findFilm(filmId);
 
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(film ->
-                        assertThat(film).hasFieldOrPropertyWithValue("id", idFilm)
+                        assertThat(film).hasFieldOrPropertyWithValue("id", filmId)
                 );
     }
 }
