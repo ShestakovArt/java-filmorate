@@ -29,4 +29,8 @@ public interface FilmDbStorage {
     boolean deleteLike(Integer filmId, Integer userId);
 
     Collection<Film> findDirectorSortedFilms(Integer directorId, String[] sortBy);
+
+    Collection<Film> findFilmsByDirector(String criteria);
+
+    Collection<Film> findFilmsByTitle(String criteria);
 }

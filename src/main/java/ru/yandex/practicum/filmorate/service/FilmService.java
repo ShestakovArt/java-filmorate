@@ -23,6 +23,8 @@ public class FilmService {
     final GenreService genreService;
     final DirectorService directorService;
 
+    private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
+
     @Autowired
     public FilmService(FilmDbStorageImpl filmDbStorage, MpaService mpaService, GenreService genreService, DirectorService directorService) {
         this.filmDbStorage = filmDbStorage;
@@ -136,6 +138,17 @@ public class FilmService {
         }
 
         return filmDbStorage.listMostPopularFilms(count);
+    }
+
+    public Collection<Film> findFilmsByCriteria(String criteria, Set<String> params) {
+        Collection<Film> foundFilms = new TreeSet<>(filmPopularityComparator);
+        if (params.contains("director")) {
+            foundFilms.addAll(filmDbStorage.findFilmsByDirector(criteria));
+        }
+        if (params.contains("title")) {
+            foundFilms.addAll(filmDbStorage.findFilmsByTitle(criteria));
+        }
+        return foundFilms;
     }
 
     public void deleteFilm(int filmId) {

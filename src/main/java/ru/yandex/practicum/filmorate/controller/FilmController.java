@@ -2,21 +2,20 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.validator.SearchParamsValid;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -86,6 +85,14 @@ public class FilmController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(
+            @RequestParam("query") @NotNull @NotEmpty String criteria,
+            @RequestParam("by") @SearchParamsValid Set<String> params
+    ) {
+        return filmService.findFilmsByCriteria(criteria, params);
+    }
+  
     @DeleteMapping(pathId)
     public ResponseEntity<Film> deleteFilm(@PathVariable int id){
         filmService.deleteFilm(id);
