@@ -23,7 +23,7 @@ public class FilmService {
     final GenreService genreService;
     final DirectorService directorService;
 
-    private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate);
+    private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
 
     @Autowired
     public FilmService(FilmDbStorageImpl filmDbStorage, MpaService mpaService, GenreService genreService, DirectorService directorService) {
@@ -150,7 +150,7 @@ public class FilmService {
         }
         return foundFilms;
     }
-  
+
     public void deleteFilm(int filmId) {
         if (filmId < 1) {
             throw new FilmNotFoundException("Id фильма должно быть больше 0");
