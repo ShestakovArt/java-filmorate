@@ -18,7 +18,10 @@ import ru.yandex.practicum.filmorate.service.DirectorService;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -38,6 +41,18 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         this.genreDbStorage = genreDbStorage;
         this.directorDbStorage = directorDbStorage;
     }
+
+    private static final String findFilmsByDirectorsNameMatchesCriteria = "" +
+            "SELECT f.FILM_ID, f.FILM_NAME, f.FILM_DESCRIPTION, f.FILM_RELEASE_DATE, " +
+            "f.FILM_DURATION, f.FILM_RATE, f.MPA_ID FROM FILMS f " +
+            "RIGHT JOIN DIRECTOR_TO_FILM dtf ON dtf.FILM_ID = f.FILM_ID " +
+            "RIGHT JOIN DIRECTOR dir ON dir.DIRECTOR_ID = dtf.DIRECTOR_ID " +
+            "WHERE LOWER(dir.DIRECTOR_NAME) LIKE LOWER(?)";
+
+    private static final String findFilmsByTitleMatchesCriteria = "" +
+            "SELECT f.FILM_ID, f.FILM_NAME, f.FILM_DESCRIPTION, " +
+            "f.FILM_RELEASE_DATE, f.FILM_DURATION, f.FILM_RATE, f.MPA_ID " +
+            "FROM FILMS f WHERE LOWER(f.FILM_NAME) LIKE LOWER(?)";
 
     @Override
     public int addFilm(Film film) {
@@ -169,6 +184,24 @@ public class FilmDbStorageImpl implements FilmDbStorage {
             return jdbcTemplate.update(sqlQuery) == 1;
         }
         return false;
+    }
+
+    @Override
+    public Collection<Film> findFilmsByDirector(String criteria) {
+        return jdbcTemplate.query(
+                findFilmsByDirectorsNameMatchesCriteria,
+                this::mapRowToFilm,
+                String.format("%%%s%%", criteria)
+        );
+    }
+
+    @Override
+    public Collection<Film> findFilmsByTitle(String criteria) {
+        return jdbcTemplate.query(
+                findFilmsByTitleMatchesCriteria,
+                this::mapRowToFilm,
+                String.format("%%%s%%", criteria)
+        );
     }
 
     private boolean findLikeUserToFilm(Integer filmId, Integer userId) {
