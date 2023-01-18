@@ -36,7 +36,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleFilmNotFoundException(final RuntimeException e) {
+    public ErrorResponse handleReviewNotFoundException(final ReviewNotFoundException e) {
         return new ErrorResponse(
                 "Отзыв с данным ID не найден"
         );

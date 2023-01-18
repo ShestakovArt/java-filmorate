@@ -5,25 +5,33 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
+import ru.yandex.practicum.filmorate.enums.EventType;
+import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
+import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
+import static ru.yandex.practicum.filmorate.enums.EventType.FRIEND;
 
 @Component
 public class UserDbStorageImpl implements UserDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public UserDbStorageImpl(JdbcTemplate jdbcTemplate){
+    public UserDbStorageImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
-    public int addUser(User user){
+    public int addUser(User user) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("USERS")
                 .usingGeneratedKeyColumns("USER_ID");
@@ -61,8 +69,9 @@ public class UserDbStorageImpl implements UserDbStorage {
     }
 
     @Override
-    public boolean addRequestsFriendship (Integer sender, Integer recipient){
-        if(!findRequestsFriendship(sender, recipient)){
+    public boolean addRequestsFriendship(Integer sender, Integer recipient) {
+        boolean resultOperation = false;
+        if (!findRequestsFriendship(sender, recipient)) {
             HashMap<String, Integer> map = new HashMap<>();
             map.put("SENDER_ID", sender);
             map.put("RECIPIENT_ID", recipient);
@@ -70,11 +79,13 @@ public class UserDbStorageImpl implements UserDbStorage {
             SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                     .withTableName("FRIENDSHIP_REQUESTS")
                     .usingColumns("SENDER_ID", "RECIPIENT_ID");
-
-            return simpleJdbcInsert.execute(map) == 1;
+            resultOperation = simpleJdbcInsert.execute(map) == 1;
+            if (resultOperation) {
+                resultOperation = recordEvent(sender, recipient);
+            }
         }
 
-        return false;
+        return resultOperation;
     }
 
     @Override
@@ -102,7 +113,7 @@ public class UserDbStorageImpl implements UserDbStorage {
                 "where RECIPIENT_ID = %d", userId);
         jdbcTemplate.update(sqlQuery);
 
-         sqlQuery = String.format("delete\n" +
+        sqlQuery = String.format("delete\n" +
                 "from USERS\n" +
                 "where USER_ID = %d", userId);
         return jdbcTemplate.update(sqlQuery) > 0;
@@ -116,6 +127,19 @@ public class UserDbStorageImpl implements UserDbStorage {
                 " and (SENDER_ID = %d or RECIPIENT_ID = %d)", firstId, firstId, secondId, secondId);
 
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
+    }
+
+    private boolean recordEvent(Integer userId, Integer entityId) {
+        Feed feed = new Feed();
+        feed.setTimestamp(new Timestamp(new Date().getTime()).getTime());
+        feed.setUserId(userId);
+        feed.setEventType(FRIEND);
+        feed.setOperation(ADD);
+        feed.setEntityId(entityId);
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("EVENT")
+                .usingGeneratedKeyColumns("EVENT_ID");
+        return simpleJdbcInsert.executeAndReturnKey(feed.toMap()).intValue() == 1;
     }
 
     private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
