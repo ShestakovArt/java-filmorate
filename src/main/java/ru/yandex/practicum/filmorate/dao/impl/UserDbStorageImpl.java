@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -13,15 +14,13 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
-import static ru.yandex.practicum.filmorate.enums.EventType.FRIEND;
+import static ru.yandex.practicum.filmorate.enums.EventOperation.*;
+import static ru.yandex.practicum.filmorate.enums.EventType.*;
 
 @Component
+@Slf4j
 public class UserDbStorageImpl implements UserDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -30,6 +29,12 @@ public class UserDbStorageImpl implements UserDbStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * Добавить пользователя
+     *
+     * @param user данные пользователя
+     * @return присвоенный id пользователю
+     */
     @Override
     public int addUser(User user) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
@@ -39,6 +44,11 @@ public class UserDbStorageImpl implements UserDbStorage {
         return simpleJdbcInsert.executeAndReturnKey(user.toMap()).intValue();
     }
 
+    /**
+     * Обновить данные пользователя
+     *
+     * @param user данные пользователя
+     */
     @Override
     public void upgradeUser(User user) {
         String sqlQuery = "update USERS set " +
@@ -53,6 +63,12 @@ public class UserDbStorageImpl implements UserDbStorage {
                 , user.getId());
     }
 
+    /**
+     * Получить данные пользователя
+     *
+     * @param id id пользователя
+     * @return данные пользователя
+     */
     @Override
     public Optional<User> findUser(Integer id) {
         String sqlQuery = "select USER_ID, USER_EMAIL, USER_LOGIN, USER_NAME, USER_BIRTHDAY " +
@@ -61,6 +77,11 @@ public class UserDbStorageImpl implements UserDbStorage {
         return Optional.of(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id));
     }
 
+    /**
+     * Получить информацию по всем пользователям
+     *
+     * @return список всех пользователей
+     */
     @Override
     public List<User> findAll() {
         String sqlQuery = "select USER_ID, USER_EMAIL, USER_LOGIN, USER_NAME, USER_BIRTHDAY from USERS";
@@ -68,6 +89,13 @@ public class UserDbStorageImpl implements UserDbStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser);
     }
 
+    /**
+     * Добавить запрос на дружбу
+     *
+     * @param sender    id пользователя отправителя запроса
+     * @param recipient id пользователя получателя запроса
+     * @return результат добавления(true/false)
+     */
     @Override
     public boolean addRequestsFriendship(Integer sender, Integer recipient) {
         boolean resultOperation = false;
@@ -81,13 +109,19 @@ public class UserDbStorageImpl implements UserDbStorage {
                     .usingColumns("SENDER_ID", "RECIPIENT_ID");
             resultOperation = simpleJdbcInsert.execute(map) == 1;
             if (resultOperation) {
-                resultOperation = recordEvent(sender, recipient);
+                resultOperation = recordEvent(sender, recipient, FRIEND, ADD);
             }
         }
 
         return resultOperation;
     }
 
+    /**
+     * получить информацию по всем запросам на дружбу пользователя
+     *
+     * @param userId id пользователя
+     * @return Список id друзей пользователя
+     */
     @Override
     public List<Integer> findAllFriends(Integer userId) {
         String sqlQuery = String.format("select RECIPIENT_ID as friends\n" +
@@ -97,15 +131,32 @@ public class UserDbStorageImpl implements UserDbStorage {
         return jdbcTemplate.queryForList(sqlQuery, Integer.class);
     }
 
+    /**
+     * Удаление запроса на дружбу
+     *
+     * @param userId   id пользователя отправителя запроса
+     * @param idFriend id пользователя получателя запроса
+     * @return результат удаления(true/false)
+     */
     @Override
     public boolean deleteFriends(Integer userId, Integer idFriend) {
         String sqlQuery = String.format("delete\n" +
                 "from FRIENDSHIP_REQUESTS\n" +
                 "where SENDER_ID = %d and RECIPIENT_ID = %d", userId, idFriend);
+        boolean resultOperation = jdbcTemplate.update(sqlQuery) > 0;
+        if (resultOperation) {
+            resultOperation = recordEvent(userId, idFriend, FRIEND, REMOVE);
+        }
 
-        return jdbcTemplate.update(sqlQuery) > 0;
+        return resultOperation;
     }
 
+    /**
+     * Удалить пользователя
+     *
+     * @param userId id пользователя
+     * @return результат удаления(true/false)
+     */
     @Override
     public boolean deleteUser(Integer userId) {
         String sqlQuery = String.format("delete\n" +
@@ -116,10 +167,33 @@ public class UserDbStorageImpl implements UserDbStorage {
         sqlQuery = String.format("delete\n" +
                 "from USERS\n" +
                 "where USER_ID = %d", userId);
+
         return jdbcTemplate.update(sqlQuery) > 0;
     }
 
+    /**
+     * Получить 'ленту событий' пользоватлея
+     *
+     * @param userId id пользователя
+     * @return список событий
+     */
+    public Collection<Feed> getFeed(Integer userId) {
+        return jdbcTemplate.query(
+                String.format("select EVENT_ID, TIMESTAMP_EVENT, USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID\n" +
+                        "from EVENT\n" +
+                        "where USER_ID = %d", userId),
+                this::mapRowToFeed
+        );
+    }
 
+
+    /**
+     * Найти запрос на дружбу пользователей
+     *
+     * @param firstId  id первого пользователя
+     * @param secondId id второго пользователя
+     * @return наличие запроса на дружбу(true/false)
+     */
     private boolean findRequestsFriendship(Integer firstId, Integer secondId) {
         String sqlQuery = String.format("select COUNT(*)\n" +
                 "from FRIENDSHIP_REQUESTS\n" +
@@ -129,17 +203,27 @@ public class UserDbStorageImpl implements UserDbStorage {
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 
-    private boolean recordEvent(Integer userId, Integer entityId) {
+    /**
+     * Записать данные по событию пользователя
+     *
+     * @param userId    id пользователя
+     * @param entityId  идентификатор сущности, с которой произошло событие
+     * @param type      тип события, одно из значениий LIKE, REVIEW, FRIEND
+     * @param operation событие, одно из значениий REMOVE, ADD, UPDATE
+     * @return результат (true/false)
+     */
+    protected boolean recordEvent(Integer userId, Integer entityId, EventType type, EventOperation operation) {
         Feed feed = new Feed();
         feed.setTimestamp(new Timestamp(new Date().getTime()).getTime());
         feed.setUserId(userId);
-        feed.setEventType(FRIEND);
-        feed.setOperation(ADD);
+        feed.setEventType(type);
+        feed.setOperation(operation);
         feed.setEntityId(entityId);
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("EVENT")
                 .usingGeneratedKeyColumns("EVENT_ID");
-        return simpleJdbcInsert.executeAndReturnKey(feed.toMap()).intValue() == 1;
+
+        return simpleJdbcInsert.execute(feed.toMap()) == 1;
     }
 
     private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
@@ -150,5 +234,17 @@ public class UserDbStorageImpl implements UserDbStorage {
         user.setId(resultSet.getInt("USER_ID"));
 
         return user;
+    }
+
+    private Feed mapRowToFeed(ResultSet resultSet, int rowNum) throws SQLException {
+        Feed feed = new Feed();
+        feed.setEventId(resultSet.getInt("EVENT_ID"));
+        feed.setTimestamp(resultSet.getLong("TIMESTAMP_EVENT"));
+        feed.setUserId(resultSet.getInt("USER_ID"));
+        feed.setEventType(EventType.valueOf(resultSet.getString("EVENT_TYPE")));
+        feed.setOperation(EventOperation.valueOf(resultSet.getString("OPERATION")));
+        feed.setEntityId(resultSet.getInt("ENTITY_ID"));
+
+        return feed;
     }
 }

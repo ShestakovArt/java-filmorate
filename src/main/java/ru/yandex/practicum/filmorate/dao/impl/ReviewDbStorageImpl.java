@@ -2,10 +2,14 @@ package ru.yandex.practicum.filmorate.dao.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
+import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
+import ru.yandex.practicum.filmorate.dao.MpaDbStorage;
 import ru.yandex.practicum.filmorate.dao.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.model.Review;
 
@@ -15,12 +19,23 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 
+import static ru.yandex.practicum.filmorate.enums.EventOperation.*;
+import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
+import static ru.yandex.practicum.filmorate.enums.EventType.REVIEW;
+
 @Slf4j
 @Repository
-@RequiredArgsConstructor
 public class ReviewDbStorageImpl implements ReviewDbStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    final UserDbStorageImpl userDbStorage;
+
+    @Autowired
+    public ReviewDbStorageImpl(JdbcTemplate jdbcTemplate,
+                               UserDbStorageImpl userDbStorage) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.userDbStorage = userDbStorage;
+    }
 
     private Review makeReview(ResultSet rs, int rowNum) throws SQLException {
         Review review = new Review();
@@ -30,6 +45,7 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
         review.setUseful(rs.getInt("USEFUL"));
         review.setUserId(rs.getInt("USER_ID"));
         review.setFilmId(rs.getInt("FILM_ID"));
+
         return review;
     }
 
@@ -46,14 +62,15 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
 
     @Override
     public List<Review> getReviewTopForFilmId(Integer filmId, Long count) {
-            String sql = "SELECT * FROM REVIEWS " +
-                    " WHERE FILM_ID = ? " +
-                    " ORDER BY USEFUL DESC " +
-                    " LIMIT ?;";
+        String sql = "SELECT * FROM REVIEWS " +
+                " WHERE FILM_ID = ? " +
+                " ORDER BY USEFUL DESC " +
+                " LIMIT ?;";
 
-            List<Review> reviews = jdbcTemplate.query(sql, this::makeReview, filmId, count);
-            log.info("Получить лист отзывов из БД: {}.", reviews.size());
-            return reviews;
+        List<Review> reviews = jdbcTemplate.query(sql, this::makeReview, filmId, count);
+        log.info("Получить лист отзывов из БД: {}.", reviews.size());
+
+        return reviews;
     }
 
     @Override
@@ -76,37 +93,44 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
                 , keyHolder);
 
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+        userDbStorage.recordEvent(review.getUserId(), review.getReviewId(), REVIEW, ADD);
         log.info("Создать отзыв: {}.", review.getReviewId());
+
         return review;
     }
 
     @Override
     public Review update(Review review) {
-            String sql = "UPDATE REVIEWS " +
-                    " SET CONTENT = ?, POSITIVE = ? " +
-                    " WHERE REVIEW_ID = ? ;";
+        String sql = "UPDATE REVIEWS " +
+                " SET CONTENT = ?, POSITIVE = ? " +
+                " WHERE REVIEW_ID = ? ;";
 
-            jdbcTemplate.update(sql
-                    , review.getContent()
-                    , review.getIsPositive()
-                    , review.getReviewId()
-            );
+        jdbcTemplate.update(sql
+                , review.getContent()
+                , review.getIsPositive()
+                , review.getReviewId()
+        );
+        userDbStorage.recordEvent(review.getUserId(), review.getReviewId(), REVIEW, UPDATE);
+
         return getReviewById(review.getReviewId());
     }
 
     @Override
     public void remove(Integer reviewId) {
-            String sql = "DELETE FROM REVIEW_LIKES WHERE REVIEW_ID = ? ;";
-            jdbcTemplate.update(sql, reviewId);
-            sql = "DELETE FROM REVIEWS WHERE REVIEW_ID = ? ;";
-            jdbcTemplate.update(sql, reviewId);
+        Review review = getReviewById(reviewId);
+        String sql = "DELETE FROM REVIEW_LIKES WHERE REVIEW_ID = ? ;";
+        jdbcTemplate.update(sql, reviewId);
+        sql = "DELETE FROM REVIEWS WHERE REVIEW_ID = ? ;";
+        jdbcTemplate.update(sql, reviewId);
+        userDbStorage.recordEvent(review.getUserId(), review.getReviewId(), REVIEW, REMOVE);
     }
 
     @Override
     public Review getReviewById(Integer reviewId) {
-            String sql = "SELECT * FROM REVIEWS WHERE REVIEW_ID = ?;";
-            List<Review> reviews = jdbcTemplate.query(sql, this::makeReview, reviewId);
-            return reviews.get(0);
+        String sql = "SELECT * FROM REVIEWS WHERE REVIEW_ID = ?;";
+        List<Review> reviews = jdbcTemplate.query(sql, this::makeReview, reviewId);
+
+        return reviews.get(0);
     }
 
     @Override

@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -105,7 +106,7 @@ public class UserController {
     }
 
     @GetMapping(pathFeed)
-    public Collection<Feed> getFeed() {
-        return new ArrayList<Feed>();
+    public Collection<Feed> getFeed(@PathVariable int id) {
+        return userService.getUserFeed(id);
     }
 }

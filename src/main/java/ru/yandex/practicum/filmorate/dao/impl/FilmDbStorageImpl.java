@@ -23,6 +23,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
+import static ru.yandex.practicum.filmorate.enums.EventOperation.REMOVE;
+import static ru.yandex.practicum.filmorate.enums.EventType.FRIEND;
+import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
+
 @Component
 @Slf4j
 public class FilmDbStorageImpl implements FilmDbStorage {
@@ -30,16 +35,19 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     final MpaDbStorage mpaDbStorage;
     final GenreDbStorage genreDbStorage;
     final DirectorDbStorage directorDbStorage;
+    final UserDbStorageImpl userDbStorage;
 
     @Autowired
     public FilmDbStorageImpl(JdbcTemplate jdbcTemplate,
                              MpaDbStorage mpaDbStorage,
                              GenreDbStorage genreDbStorage,
-                             DirectorDbStorage directorDbStorage) {
+                             DirectorDbStorage directorDbStorage,
+                             UserDbStorageImpl userDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.mpaDbStorage = mpaDbStorage;
         this.genreDbStorage = genreDbStorage;
         this.directorDbStorage = directorDbStorage;
+        this.userDbStorage = userDbStorage;
     }
 
     private static final String findFilmsByDirectorsNameMatchesCriteria = "" +
@@ -147,11 +155,15 @@ public class FilmDbStorageImpl implements FilmDbStorage {
 
     @Override
     public boolean deleteLike(Integer filmId, Integer userId) {
+        boolean resultOperation = false;
         if (findLikeUserToFilm(filmId, userId)) {
             String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
-            return jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
+            resultOperation = jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
+            if (resultOperation) {
+                resultOperation = userDbStorage.recordEvent(userId, filmId, LIKE, REMOVE);
+            }
         }
-        return false;
+        return resultOperation;
     }
 
     @Override
@@ -179,11 +191,15 @@ public class FilmDbStorageImpl implements FilmDbStorage {
 
     @Override
     public boolean addLikeFilm(Integer filmId, Integer userId) {
+        boolean resultOperation = false;
         if (!findLikeUserToFilm(filmId, userId)) {
             String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", filmId, userId);
-            return jdbcTemplate.update(sqlQuery) == 1;
+            resultOperation = jdbcTemplate.update(sqlQuery) == 1;
+            if (resultOperation) {
+                resultOperation = userDbStorage.recordEvent(userId, filmId, LIKE, ADD);
+            }
         }
-        return false;
+        return resultOperation;
     }
 
     @Override
