@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -178,6 +179,8 @@ public class UserDbStorageImpl implements UserDbStorage {
      * @return список событий
      */
     public Collection<Feed> getFeed(Integer userId) {
+        findUser(userId);
+        
         return jdbcTemplate.query(
                 String.format("select EVENT_ID, TIMESTAMP_EVENT, USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID\n" +
                         "from EVENT\n" +
