@@ -1,15 +1,11 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
-import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
-import ru.yandex.practicum.filmorate.dao.MpaDbStorage;
 import ru.yandex.practicum.filmorate.dao.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.model.Review;
 
@@ -18,10 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
-
-import static ru.yandex.practicum.filmorate.enums.EventOperation.*;
-import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
-import static ru.yandex.practicum.filmorate.enums.EventType.REVIEW;
 
 @Slf4j
 @Repository
@@ -93,7 +85,6 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
                 , keyHolder);
 
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
-        userDbStorage.recordEvent(review.getUserId(), review.getReviewId(), REVIEW, ADD);
         log.info("Создать отзыв: {}.", review.getReviewId());
 
         return review;
@@ -110,20 +101,16 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
                 , review.getIsPositive()
                 , review.getReviewId()
         );
-        Review reviewUpdate = getReviewById(review.getReviewId());
-        userDbStorage.recordEvent(reviewUpdate.getUserId(), reviewUpdate.getReviewId(), REVIEW, UPDATE);
 
-        return reviewUpdate;
+        return getReviewById(review.getReviewId());
     }
 
     @Override
     public void remove(Integer reviewId) {
-        Review review = getReviewById(reviewId);
         String sql = "DELETE FROM REVIEW_LIKES WHERE REVIEW_ID = ? ;";
         jdbcTemplate.update(sql, reviewId);
         sql = "DELETE FROM REVIEWS WHERE REVIEW_ID = ? ;";
         jdbcTemplate.update(sql, reviewId);
-        userDbStorage.recordEvent(review.getUserId(), review.getReviewId(), REVIEW, REMOVE);
     }
 
     @Override

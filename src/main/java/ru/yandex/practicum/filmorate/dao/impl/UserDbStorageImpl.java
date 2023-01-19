@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.enums.EventOperation;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -16,9 +16,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
-
-import static ru.yandex.practicum.filmorate.enums.EventOperation.*;
-import static ru.yandex.practicum.filmorate.enums.EventType.*;
 
 @Component
 @Slf4j
@@ -99,7 +96,6 @@ public class UserDbStorageImpl implements UserDbStorage {
      */
     @Override
     public boolean addRequestsFriendship(Integer sender, Integer recipient) {
-        boolean resultOperation = false;
         if (!findRequestsFriendship(sender, recipient)) {
             HashMap<String, Integer> map = new HashMap<>();
             map.put("SENDER_ID", sender);
@@ -108,13 +104,11 @@ public class UserDbStorageImpl implements UserDbStorage {
             SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                     .withTableName("FRIENDSHIP_REQUESTS")
                     .usingColumns("SENDER_ID", "RECIPIENT_ID");
-            resultOperation = simpleJdbcInsert.execute(map) == 1;
-            if (resultOperation) {
-                resultOperation = recordEvent(sender, recipient, FRIEND, ADD);
-            }
+
+            return simpleJdbcInsert.execute(map) == 1;
         }
 
-        return resultOperation;
+        return false;
     }
 
     /**
@@ -144,12 +138,8 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = String.format("delete\n" +
                 "from FRIENDSHIP_REQUESTS\n" +
                 "where SENDER_ID = %d and RECIPIENT_ID = %d", userId, idFriend);
-        boolean resultOperation = jdbcTemplate.update(sqlQuery) > 0;
-        if (resultOperation) {
-            resultOperation = recordEvent(userId, idFriend, FRIEND, REMOVE);
-        }
 
-        return resultOperation;
+        return jdbcTemplate.update(sqlQuery) > 0;
     }
 
     /**
@@ -178,15 +168,39 @@ public class UserDbStorageImpl implements UserDbStorage {
      * @param userId id пользователя
      * @return список событий
      */
+    @Override
     public Collection<Feed> getFeed(Integer userId) {
         findUser(userId);
-        
-        return jdbcTemplate.query(
-                String.format("select EVENT_ID, TIMESTAMP_EVENT, USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID\n" +
-                        "from EVENT\n" +
-                        "where USER_ID = %d", userId),
-                this::mapRowToFeed
-        );
+        String sqlQuery = String.format("select EVENT_ID, TIMESTAMP_EVENT, USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID\n" +
+                "from EVENT\n" +
+                "where USER_ID = %d", userId);
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFeed);
+    }
+
+    /**
+     * Записать данные по событию пользователя
+     *
+     * @param userId    id пользователя
+     * @param entityId  идентификатор сущности, с которой произошло событие
+     * @param type      тип события, одно из значениий LIKE, REVIEW, FRIEND
+     * @param operation событие, одно из значениий REMOVE, ADD, UPDATE
+     * @return результат (true/false)
+     */
+    @Override
+    public void recordEvent(Integer userId, Integer entityId, EventType type, EventOperation operation) {
+        Feed feed = new Feed();
+        feed.setTimestamp(new Timestamp(new Date().getTime()).getTime());
+        feed.setUserId(userId);
+        feed.setEventType(type);
+        feed.setOperation(operation);
+        feed.setEntityId(entityId);
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("EVENT")
+                .usingGeneratedKeyColumns("EVENT_ID");
+        if (simpleJdbcInsert.execute(feed.toMap()) != 1) {
+            throw new IncorrectParameterException("Ошибка при добавлении записи в ленту событий");
+        }
     }
 
 
@@ -204,29 +218,6 @@ public class UserDbStorageImpl implements UserDbStorage {
                 " and (SENDER_ID = %d or RECIPIENT_ID = %d)", firstId, firstId, secondId, secondId);
 
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
-    }
-
-    /**
-     * Записать данные по событию пользователя
-     *
-     * @param userId    id пользователя
-     * @param entityId  идентификатор сущности, с которой произошло событие
-     * @param type      тип события, одно из значениий LIKE, REVIEW, FRIEND
-     * @param operation событие, одно из значениий REMOVE, ADD, UPDATE
-     * @return результат (true/false)
-     */
-    protected boolean recordEvent(Integer userId, Integer entityId, EventType type, EventOperation operation) {
-        Feed feed = new Feed();
-        feed.setTimestamp(new Timestamp(new Date().getTime()).getTime());
-        feed.setUserId(userId);
-        feed.setEventType(type);
-        feed.setOperation(operation);
-        feed.setEntityId(entityId);
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("EVENT")
-                .usingGeneratedKeyColumns("EVENT_ID");
-
-        return simpleJdbcInsert.execute(feed.toMap()) == 1;
     }
 
     private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {

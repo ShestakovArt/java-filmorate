@@ -9,10 +9,13 @@ import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.model.LikeStatus;
+import ru.yandex.practicum.filmorate.enums.LikeStatus;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
+
+import static ru.yandex.practicum.filmorate.enums.EventOperation.*;
+import static ru.yandex.practicum.filmorate.enums.EventType.REVIEW;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +28,7 @@ public class ReviewService {
     public List<Review> findAll(Integer filmId, Long count) {
         if (filmId > 0) {
             if (filmStorage.findFilm(filmId).isPresent()) {
-            return reviewStorage.getReviewTopForFilmId(filmId, count);
+                return reviewStorage.getReviewTopForFilmId(filmId, count);
             } else {
                 throw new FilmNotFoundException("Идентификатор фильма не найден.");
             }
@@ -41,12 +44,18 @@ public class ReviewService {
         if (!filmStorage.findFilm(review.getFilmId()).isPresent()) {
             throw new FilmNotFoundException("Фильм не найден.");
         }
-        return  reviewStorage.create(review);
+        Review reviewAssignId = reviewStorage.create(review);
+        userStorage.recordEvent(reviewAssignId.getUserId(), reviewAssignId.getReviewId(), REVIEW, ADD);
+
+        return reviewAssignId;
     }
 
     public Review update(Review review) {
         if (reviewStorage.isReviewExist(review.getReviewId())) {
-        return reviewStorage.update(review);
+            Review reviewAssignId = reviewStorage.update(review);
+            userStorage.recordEvent(reviewAssignId.getUserId(), reviewAssignId.getReviewId(), REVIEW, UPDATE);
+
+            return reviewAssignId;
         } else {
             throw new ReviewNotFoundException("Ошибка обновления, отзыв не найден.");
         }
@@ -54,7 +63,9 @@ public class ReviewService {
 
     public void remove(Integer reviewId) {
         if (reviewStorage.isReviewExist(reviewId)) {
-        reviewStorage.remove(reviewId);
+            Review review = reviewStorage.getReviewById(reviewId);
+            reviewStorage.remove(reviewId);
+            userStorage.recordEvent(review.getUserId(), review.getReviewId(), REVIEW, REMOVE);
         } else {
             throw new ReviewNotFoundException("Отзыв для удаления не найден.");
         }
@@ -62,7 +73,7 @@ public class ReviewService {
 
     public Review getReviewById(Integer reviewId) {
         if (reviewStorage.isReviewExist(reviewId)) {
-        return reviewStorage.getReviewById(reviewId);
+            return reviewStorage.getReviewById(reviewId);
         } else {
             throw new ReviewNotFoundException("Отзыв с таким идентификатором не найден.");
         }
@@ -78,7 +89,7 @@ public class ReviewService {
         reviewLikeStorage.removeLike(reviewId, userId, likeStatus);
     }
 
-    public void checkNotFound (Integer reviewId, Integer userId) {
+    public void checkNotFound(Integer reviewId, Integer userId) {
         if (!reviewStorage.isReviewExist(reviewId)) {
             throw new ReviewNotFoundException("Отзыв с таким идентификатором не найден.");
         }

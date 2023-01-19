@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.service.DirectorService;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,11 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
-import static ru.yandex.practicum.filmorate.enums.EventOperation.REMOVE;
-import static ru.yandex.practicum.filmorate.enums.EventType.FRIEND;
-import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
 
 @Component
 @Slf4j
@@ -150,20 +144,19 @@ public class FilmDbStorageImpl implements FilmDbStorage {
             mostPopularFilms.add(findFilm(id)
                     .orElseThrow(() -> new FilmNotFoundException("Фильм с идентификатором " + id + " не найден.")));
         }
+
         return mostPopularFilms;
     }
 
     @Override
     public boolean deleteLike(Integer filmId, Integer userId) {
-        boolean resultOperation = false;
         if (findLikeUserToFilm(filmId, userId)) {
             String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
-            resultOperation = jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
-            if (resultOperation) {
-                resultOperation = userDbStorage.recordEvent(userId, filmId, LIKE, REMOVE);
-            }
+
+            return jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
         }
-        return resultOperation;
+
+        return false;
     }
 
     @Override
@@ -186,20 +179,19 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         sqlQuery = String.format("delete\n" +
                 "from FILMS\n" +
                 "where FILM_ID = %d", filmId);
+
         return jdbcTemplate.update(sqlQuery) > 0;
     }
 
     @Override
     public boolean addLikeFilm(Integer filmId, Integer userId) {
-        boolean resultOperation = false;
         if (!findLikeUserToFilm(filmId, userId)) {
             String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", filmId, userId);
-            resultOperation = jdbcTemplate.update(sqlQuery) == 1;
-            if (resultOperation) {
-                resultOperation = userDbStorage.recordEvent(userId, filmId, LIKE, ADD);
-            }
+
+            return jdbcTemplate.update(sqlQuery) == 1;
         }
-        return resultOperation;
+
+        return false;
     }
 
     @Override
@@ -233,6 +225,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "from USER_LIKE_FILM\n" +
                 "where FILM_ID = %d", filmId);
         List<Integer> countRateAndLike = jdbcTemplate.queryForList(sqlQuery, Integer.class);
+
         return countRateAndLike.get(0);
     }
 
@@ -249,6 +242,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         film.setGenres(genreDbStorage.getFilmGenres(filmId));
         film.setRate(getRateAndLikeFilm(filmId));
         film.setDirectors(directorDbStorage.getFilmDirectors(filmId));
+
         return film;
     }
 }

@@ -12,6 +12,10 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 
+import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
+import static ru.yandex.practicum.filmorate.enums.EventOperation.REMOVE;
+import static ru.yandex.practicum.filmorate.enums.EventType.FRIEND;
+
 @Service
 public class UserService {
     final UserDbStorage userDbStorage;
@@ -56,7 +60,12 @@ public class UserService {
             getUser(idFriend);
         }
 
-        return userDbStorage.addRequestsFriendship(userId, idFriend);
+        boolean resultOperation = userDbStorage.addRequestsFriendship(userId, idFriend);
+        if (resultOperation) {
+            userDbStorage.recordEvent(userId, idFriend, FRIEND, ADD);
+        }
+
+        return resultOperation;
     }
 
     public void deleteFriend(Integer userId, Integer idFriend) {
@@ -65,6 +74,8 @@ public class UserService {
         }
         if (!userDbStorage.deleteFriends(userId, idFriend)) {
             throw new IncorrectParameterException("Не удалось удалить пользователя из друзей");
+        } else {
+            userDbStorage.recordEvent(userId, idFriend, FRIEND, REMOVE);
         }
     }
 

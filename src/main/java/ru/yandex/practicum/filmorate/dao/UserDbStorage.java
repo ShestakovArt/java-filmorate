@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -27,4 +29,6 @@ public interface UserDbStorage {
     List<Integer> findAllFriends(Integer userId);
 
     Collection<Feed> getFeed(Integer userId);
+
+    void recordEvent(Integer userId, Integer entityId, EventType type, EventOperation operation);
 }

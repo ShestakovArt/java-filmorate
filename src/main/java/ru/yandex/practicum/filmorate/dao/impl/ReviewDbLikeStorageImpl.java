@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.ReviewDbLikeStorage;
 import ru.yandex.practicum.filmorate.dao.ReviewDbStorage;
-import ru.yandex.practicum.filmorate.model.LikeStatus;
+import ru.yandex.practicum.filmorate.enums.LikeStatus;
 
 @Slf4j
 @Repository

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
+import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
@@ -15,6 +16,10 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.*;
 
+import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
+import static ru.yandex.practicum.filmorate.enums.EventOperation.REMOVE;
+import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
+
 @Service
 @Slf4j
 public class FilmService {
@@ -22,15 +27,21 @@ public class FilmService {
     final MpaService mpaService;
     final GenreService genreService;
     final DirectorService directorService;
+    final UserDbStorage userDbStorage;
 
     private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
 
     @Autowired
-    public FilmService(FilmDbStorageImpl filmDbStorage, MpaService mpaService, GenreService genreService, DirectorService directorService) {
+    public FilmService(FilmDbStorageImpl filmDbStorage,
+                       MpaService mpaService,
+                       GenreService genreService,
+                       DirectorService directorService,
+                       UserDbStorage userDbStorage) {
         this.filmDbStorage = filmDbStorage;
         this.mpaService = mpaService;
         this.genreService = genreService;
         this.directorService = directorService;
+        this.userDbStorage = userDbStorage;
     }
 
     public Film getFilm(Integer id) {
@@ -117,6 +128,8 @@ public class FilmService {
         }
         if (!filmDbStorage.addLikeFilm(filmId, userId)) {
             throw new IncorrectParameterException("Не удалось поставить лайк");
+        } else {
+            userDbStorage.recordEvent(userId, filmId, LIKE, ADD);
         }
     }
 
@@ -129,6 +142,8 @@ public class FilmService {
         }
         if (!filmDbStorage.deleteLike(filmId, userId)) {
             throw new IncorrectParameterException("Не корректный запрос на удаление лайка");
+        } else {
+            userDbStorage.recordEvent(userId, filmId, LIKE, REMOVE);
         }
     }
 
