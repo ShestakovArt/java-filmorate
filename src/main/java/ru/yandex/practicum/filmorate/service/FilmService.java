@@ -17,7 +17,7 @@ import java.util.*;
 @Slf4j
 public class FilmService {
     final FilmDbStorage filmDbStorage;
-    final UserDbStorage userDbStorage;
+    final UserService userService;
     final MpaService mpaService;
     final GenreService genreService;
     final DirectorService directorService;
@@ -25,9 +25,10 @@ public class FilmService {
     private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
 
     @Autowired
-    public FilmService(FilmDbStorageImpl filmDbStorage, UserDbStorage userDbStorage, MpaService mpaService, GenreService genreService, DirectorService directorService) {
+    public FilmService(FilmDbStorageImpl filmDbStorage, UserService userService, MpaService mpaService,
+                       GenreService genreService, DirectorService directorService) {
         this.filmDbStorage = filmDbStorage;
-        this.userDbStorage = userDbStorage;
+        this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
         this.directorService = directorService;
@@ -163,12 +164,8 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        if (!userDbStorage.findUser(userId).isPresent()) {
-            throw new UserNotFoundException(String.format("Пользователь не найден id = %d", userId));
-        }
-        if (!userDbStorage.findUser(friendId).isPresent()) {
-            throw new UserNotFoundException(String.format("Пользователь не найден id = %d", friendId));
-        }
+        userService.getUser(userId);
+        userService.getUser(friendId);
         return filmDbStorage.getCommonFilms(userId, friendId);
     }
 }
