@@ -1,5 +1,5 @@
 -- auto-generated definition
-create table IF NOT EXISTS USERS
+create table IF NOT EXISTS `USERS`
 (
     USER_ID       INTEGER auto_increment,
     USER_EMAIL    CHARACTER VARYING(50) not null,
@@ -9,14 +9,14 @@ create table IF NOT EXISTS USERS
     constraint USERS_PK
         primary key (USER_ID)
 );
-create table IF NOT EXISTS MPA
+create table IF NOT EXISTS `MPA`
 (
     MPA_ID INTEGER auto_increment,
     MPA_NAME VARCHAR(10) not null,
     constraint MPA_PK
         primary key (MPA_ID)
 );
-create table IF NOT EXISTS FILMS
+create table IF NOT EXISTS `FILMS`
 (
     FILM_ID             INTEGER auto_increment,
     FILM_NAME           CHARACTER VARYING(50)  not null,
@@ -29,9 +29,9 @@ create table IF NOT EXISTS FILMS
     constraint FILMS_PK
         primary key (FILM_ID),
     constraint FILMS_FK
-        foreign key (MPA_ID) references MPA
+        foreign key (MPA_ID) references `MPA`
 );
-create table IF NOT EXISTS GENRE
+create table IF NOT EXISTS `GENRE`
 (
     GENRE_ID   INTEGER auto_increment,
     GENRE_NAME CHARACTER VARYING(20) not null,
@@ -48,38 +48,38 @@ create table IF NOT EXISTS FRIENDSHIP_REQUESTS
     constraint FRIENDSHIP_REQUESTS_RECIPIENT_USER_ID_FK
         foreign key (RECIPIENT_ID) references USERS (USER_ID)
 );
-create table IF NOT EXISTS FILM_TO_GENRE
+create table IF NOT EXISTS `FILM_TO_GENRE`
 (
     FILM_ID  INTEGER not null,
     GENRE_ID INTEGER not null,
     constraint FILM_TO_GENRE_FILMS_FK
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references `FILMS`,
     constraint FILM_TO_GENRE_GENRE_FK
-        foreign key (GENRE_ID) references GENRE
+        foreign key (GENRE_ID) references `GENRE`
 );
-create table IF NOT EXISTS USER_LIKE_FILM(
+create table IF NOT EXISTS `USER_LIKE_FILM`(
     FILM_ID    INTEGER               not null,
     USER_ID    INTEGER               not null,
     constraint USER_LIKE_FILM_USERS_ID_FK
-        foreign key (USER_ID) references USERS (USER_ID),
+        foreign key (USER_ID) references `USERS` (USER_ID),
     constraint USER_LIKE_FILM_FILMS_ID_FK
-        foreign key (FILM_ID) references FILMS (FILM_ID)
+        foreign key (FILM_ID) references `FILMS` (FILM_ID)
 );
-create table IF NOT EXISTS DIRECTOR
+create table IF NOT EXISTS `DIRECTOR`
 (
     DIRECTOR_ID   INTEGER auto_increment,
     DIRECTOR_NAME CHARACTER VARYING(20) not null,
     constraint DIRECTOR_PK
         primary key (DIRECTOR_ID)
 );
-create table IF NOT EXISTS DIRECTOR_TO_FILM
+create table IF NOT EXISTS `DIRECTOR_TO_FILM`
 (
     FILM_ID  INTEGER not null,
     DIRECTOR_ID INTEGER not null,
     constraint DIRECTOR_TO_FILM_FILMS_FK
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references `FILMS`,
     constraint DIRECTOR_TO_FILM_DIRECTOR_FK
-        foreign key (DIRECTOR_ID) references DIRECTOR
+        foreign key (DIRECTOR_ID) references `DIRECTOR`
 );
 
 CREATE TABLE IF NOT EXISTS `REVIEWS`(

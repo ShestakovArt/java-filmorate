@@ -82,7 +82,7 @@ public class FilmController {
     @DeleteMapping(pathLikeFilm)
     public ResponseEntity deleteLikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
         filmService.deleteLikeFilm(id, userId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @GetMapping("/search")

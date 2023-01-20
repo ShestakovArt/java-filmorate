@@ -244,11 +244,11 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "select first_user_likes.FILM_ID " +
                 "from (" +
                 "select FILM_ID " +
-                "from LIKES " +
+                "from USER_LIKE_FILM " +
                 "where USER_ID = ?) as first_user_likes " +
                 "join (" +
                 "select FILM_ID " +
-                "from LIKES " +
+                "from USER_LIKE_FILM " +
                 "where USER_ID = ?) as second_user_likes " +
                 "on first_user_likes.FILM_ID = second_user_likes.FILM_ID) " +
                 "order by FILM_RATE desc";
