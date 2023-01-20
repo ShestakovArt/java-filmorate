@@ -163,7 +163,7 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        if (!filmDbStorage.findFilm(userId).isPresent()) {
+        if (!userDbStorage.findUser(userId).isPresent()) {
             throw new UserNotFoundException(String.format("Пользователь не найден id = %d", userId));
         }
         if (!userDbStorage.findUser(friendId).isPresent()) {
