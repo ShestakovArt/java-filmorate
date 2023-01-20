@@ -235,4 +235,26 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         film.setDirectors(directorDbStorage.getFilmDirectors(filmId));
         return film;
     }
+
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        String sql = "select * " +
+                "from FILMS " +
+                "where FILM_ID in (" +
+                "select first_user_likes.FILM_ID " +
+                "from (" +
+                "select FILM_ID " +
+                "from LIKES " +
+                "where USER_ID = ?) as first_user_likes " +
+                "join (" +
+                "select FILM_ID " +
+                "from LIKES " +
+                "where USER_ID = ?) as second_user_likes " +
+                "on first_user_likes.FILM_ID = second_user_likes.FILM_ID) " +
+                "order by FILM_RATE desc";
+
+        List<Film> commonFilms = jdbcTemplate.query(sql, this::mapRowToFilm, userId, friendId);
+
+        return commonFilms;
+    }
 }
