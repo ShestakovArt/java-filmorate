@@ -103,9 +103,4 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("Пользователь с идентификатором " + id + " не найден."));
     }
 
-    public List<Film> getRecommendations(Integer userId) {
-        List<Film> filmRecommendations = filmDbStorage.getRecommendations(userId);
-        return filmRecommendations;
-    }
-
 }

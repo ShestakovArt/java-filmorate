@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -21,14 +22,16 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     final UserService userService;
+    final RecommendationService recommendationService;
     final String pathId = "/{id}";
     final String pathFriends = pathId + "/friends";
     final String pathRecommendations = pathId + "/recommendations";
     final String pathIdFriend = pathFriends + "/{friendId}";
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, RecommendationService recommendationService) {
         this.userService = userService;
+        this.recommendationService = recommendationService;
     }
 
     @GetMapping()
@@ -102,6 +105,6 @@ public class UserController {
     @GetMapping(pathRecommendations)
     public ResponseEntity<List<Film>> getRecommendations(@PathVariable Integer id) {
         userService.getUser(id);
-        return new ResponseEntity<>(userService.getRecommendations(id), HttpStatus.OK);
+        return new ResponseEntity<>(recommendationService.getRecommendations(id), HttpStatus.OK);
     }
 }

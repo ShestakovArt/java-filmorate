@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
@@ -12,20 +11,15 @@ import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
 import ru.yandex.practicum.filmorate.dao.MpaDbStorage;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-
 
 @Component
 @Slf4j
@@ -52,6 +46,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
             "RIGHT JOIN DIRECTOR_TO_FILM dtf ON dtf.FILM_ID = f.FILM_ID " +
             "RIGHT JOIN DIRECTOR dir ON dir.DIRECTOR_ID = dtf.DIRECTOR_ID " +
             "WHERE LOWER(dir.DIRECTOR_NAME) LIKE LOWER(?)";
+
 
     private static final String findFilmsByTitleMatchesCriteria = "" +
             "SELECT f.FILM_ID, f.FILM_NAME, f.FILM_DESCRIPTION, " +
@@ -154,52 +149,11 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         if (findLikeUserToFilm(filmId, userId)) {
             String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
             return jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
-            }
+        }
         return false;
     }
 
-    @Override
-    public List<Film> getRecommendations(int userId) {
-        Map<Integer, Integer> mapUserIdWithCountLikes = getUsersIdWithMaxCountIntersectionLikes(userId);
-        List<Film> listFilmRecomendation = new ArrayList<>();
-        if (mapUserIdWithCountLikes.values().size() < 1) {
-            return listFilmRecomendation;
-        }
-        Optional<Integer> maxCountLike = mapUserIdWithCountLikes.values().stream().max(Integer::compareTo);
-        List<Integer> userForRecommends = mapUserIdWithCountLikes.entrySet().stream()
-                .filter(a -> a.getValue().equals(maxCountLike.get())).map(a -> a.getKey()).collect(Collectors.toList());
-        if (userForRecommends.size() < 1) {
-            return listFilmRecomendation;
-        }
-        for (Integer anotherUserId : userForRecommends) {
-            List<Film> temp = getListFilmsWithLikeAnotherUser(anotherUserId);
-            temp.removeAll(getListFilmsWithLikeAnotherUser(userId));
-            listFilmRecomendation.addAll(temp);
-        }
-        return listFilmRecomendation;
-    }
 
-    private Map<Integer, Integer> getUsersIdWithMaxCountIntersectionLikes(int userId) {
-        String sqlQuery = "SELECT USER_ID, COUNT(USER_ID) COUNT_USER " + "FROM USER_LIKE_FILM " + "WHERE FILM_ID IN (SELECT FILM_ID " + "FROM USER_LIKE_FILM " + "WHERE USER_ID = ?) " + "AND USER_ID <> ? " + "GROUP BY USER_ID";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, userId, userId);
-        Map<Integer, Integer> tempMapUserId = new HashMap<>();
-        while (rs.next()) {
-            tempMapUserId.put(rs.getInt("USER_ID"), rs.getInt("COUNT_USER"));
-        }
-
-        return tempMapUserId;
-    }
-
-    private List<Film> getListFilmsWithLikeAnotherUser(Integer userId) {
-        List<Film> tempListFilm = new ArrayList<>();
-        String tempSqlQuery = "SELECT FILM_ID FROM USER_LIKE_FILM WHERE USER_ID = ?";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(tempSqlQuery, userId);
-        while (rs.next()) {
-            Film tempFilm = findFilm(rs.getInt("FILM_ID")).get();
-            tempListFilm.add(tempFilm);
-        }
-        return tempListFilm;
-}
     @Override
     public boolean deleteFilm(Integer filmId) {
         String sqlQuery = String.format("delete\n" +
@@ -211,11 +165,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "from USER_LIKE_FILM\n" +
                 "where FILM_ID = %d", filmId);
         jdbcTemplate.update(sqlQuery);
-
-        List<Director> filmDiretors = directorDbStorage.getFilmDirectors(filmId);
-        for (Director director : filmDiretors) {
-            directorDbStorage.deleteFilmDirector(filmId, director.getId());
-        }
 
         sqlQuery = String.format("delete\n" +
                 "from FILMS\n" +
@@ -255,7 +204,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = String.format("select COUNT(*)\n" +
                 "from USER_LIKE_FILM\n" +
                 "where FILM_ID = %d and USER_ID = %d", filmId, userId);
-
         return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
     }
 
@@ -266,6 +214,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         List<Integer> countRateAndLike = jdbcTemplate.queryForList(sqlQuery, Integer.class);
         return countRateAndLike.get(0);
     }
+
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
         Film film = new Film();
@@ -284,3 +233,4 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
 }
+
