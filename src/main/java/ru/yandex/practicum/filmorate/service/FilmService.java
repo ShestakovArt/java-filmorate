@@ -13,6 +13,10 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.*;
 
+import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
+import static ru.yandex.practicum.filmorate.enums.EventOperation.REMOVE;
+import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
+
 @Service
 @Slf4j
 public class FilmService {
@@ -21,17 +25,23 @@ public class FilmService {
     final MpaService mpaService;
     final GenreService genreService;
     final DirectorService directorService;
+    final UserDbStorage userDbStorage;
 
     private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
 
     @Autowired
-    public FilmService(FilmDbStorageImpl filmDbStorage, UserService userService, MpaService mpaService,
-                       GenreService genreService, DirectorService directorService) {
+
+    public FilmService(FilmDbStorageImpl filmDbStorage,
+                       MpaService mpaService,
+                       GenreService genreService,
+                       DirectorService directorService,
+                       UserDbStorage userDbStorage) {
         this.filmDbStorage = filmDbStorage;
         this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
         this.directorService = directorService;
+        this.userDbStorage = userDbStorage;
     }
 
     public Film getFilm(Integer id) {
@@ -118,6 +128,8 @@ public class FilmService {
         }
         if (!filmDbStorage.addLikeFilm(filmId, userId)) {
             throw new IncorrectParameterException("Не удалось поставить лайк");
+        } else {
+            userDbStorage.recordEvent(userId, filmId, LIKE, ADD);
         }
     }
 
@@ -130,6 +142,8 @@ public class FilmService {
         }
         if (!filmDbStorage.deleteLike(filmId, userId)) {
             throw new IncorrectParameterException("Не корректный запрос на удаление лайка");
+        } else {
+            userDbStorage.recordEvent(userId, filmId, LIKE, REMOVE);
         }
     }
 
