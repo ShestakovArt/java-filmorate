@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
+import ru.yandex.practicum.filmorate.dao.LikeDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
@@ -27,6 +28,7 @@ public class FilmIntegrationTests {
     final FilmDbStorage filmDbStorage;
     final GenreDbStorage genreDbStorage;
     final UserDbStorage userStorage;
+    final LikeDbStorage likeDbStorage;
 
     @BeforeEach
     void createdFilmForDB() {
@@ -155,19 +157,19 @@ public class FilmIntegrationTests {
 
     @Test
     public void testAddLikeFilm() {
-        assertTrue(filmDbStorage.addLikeFilm(1, 1), "пользователь не лайкнул фильм");
-        filmDbStorage.deleteLike(1, 1);
+        assertTrue(likeDbStorage.addLikeFilm(1, 1), "пользователь не лайкнул фильм");
+        likeDbStorage.deleteLike(1, 1);
     }
 
     @Test
     public void testDeleteLike() {
-        filmDbStorage.addLikeFilm(1, 1);
-        assertTrue(filmDbStorage.deleteLike(1, 1), "Лайк не удален");
+        likeDbStorage.addLikeFilm(1, 1);
+        assertTrue(likeDbStorage.deleteLike(1, 1), "Лайк не удален");
     }
 
     @Test
     public void testListMostPopularFilms() {
-        filmDbStorage.addLikeFilm(1, 1);
+        likeDbStorage.addLikeFilm(1, 1);
         List<Film> filmList = filmDbStorage.listMostPopularFilms(1);
         assertTrue(filmList.size() == 1, "Размер списка фильмов не соответсвует");
         Optional<Film> filmOptional = filmDbStorage.findFilm(1);
