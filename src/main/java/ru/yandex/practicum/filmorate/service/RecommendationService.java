@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.RecommendationDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
@@ -15,11 +14,11 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class RecommendationService {
-    private final RecommendationDbStorage recommendationDbStorage;
+    private final LikeService likeService;
 
     @Autowired
-    public RecommendationService(RecommendationDbStorage recommendationDbStorage) {
-        this.recommendationDbStorage = recommendationDbStorage;
+    public RecommendationService(LikeService likeService) {
+        this.likeService = likeService;
     }
 
     public List<Film> getRecommendations(Integer userId) {
@@ -37,14 +36,14 @@ public class RecommendationService {
     }
 
     private Map<Integer, Integer> getUserIdWithCountLikes(Integer userId) {
-        return recommendationDbStorage.getUsersCountOfLikedSameFilmsByUser(userId);
+        return likeService.getUsersCountOfLikedSameFilmsByUser(userId);
     }
 
     private List<Film> getFilmsRecommendations(List<Integer> userForRecommends, Integer userId) {
         List<Film> listFilmRecommendation = new ArrayList<>();
         for (Integer anotherUserId : userForRecommends) {
-            List<Film> temp = recommendationDbStorage.getUserLikedFilms(anotherUserId);
-            temp.removeAll(recommendationDbStorage.getUserLikedFilms(userId));
+            List<Film> temp = likeService.getUserLikedFilms(anotherUserId);
+            temp.removeAll(likeService.getUserLikedFilms(userId));
             listFilmRecommendation.addAll(temp);
         }
         return listFilmRecommendation;

@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
-import ru.yandex.practicum.filmorate.dao.RecommendationDbStorage;
+import ru.yandex.practicum.filmorate.dao.LikeDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
@@ -16,18 +16,45 @@ import java.util.Map;
 
 @Component
 @Slf4j
-public class RecommendationDbStorageImpl implements RecommendationDbStorage {
+public class LikeDbStorageImpl implements LikeDbStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmDbStorage filmDbStorage;
 
     @Autowired
-    public RecommendationDbStorageImpl(JdbcTemplate jdbcTemplate, FilmDbStorage filmDbStorage) {
+    public LikeDbStorageImpl(JdbcTemplate jdbcTemplate, FilmDbStorage filmDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.filmDbStorage = filmDbStorage;
     }
 
     @Override
-    public Map<Integer, Integer> getUsersCountOfLikedSameFilmsByUser(int userId) {
+    public boolean addLikeFilm(Integer filmId, Integer userId) {
+        if (!findLikeUserToFilm(filmId, userId)) {
+            String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", filmId, userId);
+            return jdbcTemplate.update(sqlQuery) == 1;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteLike(Integer filmId, Integer userId) {
+        if (findLikeUserToFilm(filmId, userId)) {
+            String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
+
+            return jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteAllLikes(Integer filmId) {
+        String sqlQuery = String.format("delete\n" +
+                "from USER_LIKE_FILM\n" +
+                "where FILM_ID = %d", filmId);
+        return jdbcTemplate.update(sqlQuery) > 0;
+    }
+
+    @Override
+    public Map<Integer, Integer> getUsersCountOfLikedSameFilmsByUser(Integer userId) {
         String sqlQuery = "SELECT USER_ID, COUNT(USER_ID) COUNT_USER \n" +
                 "FROM USER_LIKE_FILM \n" +
                 "WHERE FILM_ID IN (SELECT FILM_ID \n" +
@@ -54,4 +81,13 @@ public class RecommendationDbStorageImpl implements RecommendationDbStorage {
         }
         return tempListFilm;
     }
+
+
+    private boolean findLikeUserToFilm(Integer filmId, Integer userId) {
+        String sqlQuery = String.format("select COUNT(*)\n" +
+                "from USER_LIKE_FILM\n" +
+                "where FILM_ID = %d and USER_ID = %d", filmId, userId);
+        return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
+    }
+
 }
