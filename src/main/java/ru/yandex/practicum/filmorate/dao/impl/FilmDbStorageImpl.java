@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
@@ -21,24 +21,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@Component
 @Slf4j
+@Repository
+@RequiredArgsConstructor
 public class FilmDbStorageImpl implements FilmDbStorage {
+
     private final JdbcTemplate jdbcTemplate;
     final MpaDbStorage mpaDbStorage;
     final GenreDbStorage genreDbStorage;
     final DirectorDbStorage directorDbStorage;
-
-    @Autowired
-    public FilmDbStorageImpl(JdbcTemplate jdbcTemplate,
-                             MpaDbStorage mpaDbStorage,
-                             GenreDbStorage genreDbStorage,
-                             DirectorDbStorage directorDbStorage) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.mpaDbStorage = mpaDbStorage;
-        this.genreDbStorage = genreDbStorage;
-        this.directorDbStorage = directorDbStorage;
-    }
 
     private static final String findFilmsByDirectorsNameMatchesCriteria = "" +
             "SELECT f.FILM_ID, f.FILM_NAME, f.FILM_DESCRIPTION, f.FILM_RELEASE_DATE, " +

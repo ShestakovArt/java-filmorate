@@ -1,14 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -20,8 +20,10 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
+
     final UserService userService;
     final RecommendationService recommendationService;
     final String pathId = "/{id}";
@@ -29,12 +31,6 @@ public class UserController {
     final String pathRecommendations = pathId + "/recommendations";
     final String pathFeed = pathId + "/feed";
     final String pathIdFriend = pathFriends + "/{friendId}";
-
-    @Autowired
-    public UserController(UserService userService, RecommendationService recommendationService) {
-        this.userService = userService;
-        this.recommendationService = recommendationService;
-    }
 
     @GetMapping()
     public Collection<User> getUsers() {

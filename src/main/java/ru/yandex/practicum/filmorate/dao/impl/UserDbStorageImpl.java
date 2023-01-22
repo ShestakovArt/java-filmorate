@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
-import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
@@ -17,15 +17,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
-@Component
 @Slf4j
+@Repository
+@RequiredArgsConstructor
 public class UserDbStorageImpl implements UserDbStorage {
-    private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public UserDbStorageImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final JdbcTemplate jdbcTemplate;
 
     /**
      * Добавить пользователя

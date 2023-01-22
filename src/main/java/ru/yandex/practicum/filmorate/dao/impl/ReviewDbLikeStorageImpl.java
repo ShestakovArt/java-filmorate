@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.enums.LikeStatus;
 @Repository
 @RequiredArgsConstructor
 public class ReviewDbLikeStorageImpl implements ReviewDbLikeStorage {
+
     private final ReviewDbStorage reviewStorage;
     private final JdbcTemplate jdbcTemplate;
 

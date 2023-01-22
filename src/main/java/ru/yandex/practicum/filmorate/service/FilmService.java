@@ -1,12 +1,14 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
-import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -17,9 +19,11 @@ import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
 import static ru.yandex.practicum.filmorate.enums.EventOperation.REMOVE;
 import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class FilmService {
+
     final FilmDbStorage filmDbStorage;
     final UserService userService;
     final MpaService mpaService;
@@ -29,21 +33,6 @@ public class FilmService {
     final LikeService likeService;
 
     private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
-
-    @Autowired
-    public FilmService(FilmDbStorageImpl filmDbStorage,
-                       UserService userService, MpaService mpaService,
-                       GenreService genreService,
-                       DirectorService directorService,
-                       UserDbStorage userDbStorage, LikeService likeService) {
-        this.filmDbStorage = filmDbStorage;
-        this.userService = userService;
-        this.mpaService = mpaService;
-        this.genreService = genreService;
-        this.directorService = directorService;
-        this.userDbStorage = userDbStorage;
-        this.likeService = likeService;
-    }
 
     public Film getFilm(Integer id) {
         return filmDbStorage.findFilm(id)

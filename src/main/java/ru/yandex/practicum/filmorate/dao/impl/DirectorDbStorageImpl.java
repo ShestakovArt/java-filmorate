@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -17,15 +17,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@Component
 @Slf4j
+@Repository
+@RequiredArgsConstructor
 public class DirectorDbStorageImpl implements DirectorDbStorage {
-    private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public DirectorDbStorageImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void deleteDirector(int directorId) {

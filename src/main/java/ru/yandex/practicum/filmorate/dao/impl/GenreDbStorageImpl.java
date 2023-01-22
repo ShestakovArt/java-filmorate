@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -16,16 +16,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@Component
 @Slf4j
+@Repository
+@RequiredArgsConstructor
 public class GenreDbStorageImpl implements GenreDbStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public GenreDbStorageImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public Genre findGenreById(Integer id) {

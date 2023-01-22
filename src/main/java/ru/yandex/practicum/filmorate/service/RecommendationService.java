@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -12,14 +11,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
+@RequiredArgsConstructor
 public class RecommendationService {
-    private final LikeService likeService;
 
-    @Autowired
-    public RecommendationService(LikeService likeService) {
-        this.likeService = likeService;
-    }
+    private final LikeService likeService;
 
     public List<Film> getRecommendations(Integer userId) {
         Map<Integer, Integer> mapUserIdWithCountLikes = getUserIdWithCountLikes(userId);
@@ -48,5 +43,4 @@ public class RecommendationService {
         }
         return listFilmRecommendation;
     }
-
 }

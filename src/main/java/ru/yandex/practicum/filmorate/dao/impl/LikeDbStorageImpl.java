@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.LikeDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -14,17 +14,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
 @Slf4j
+@Repository
+@RequiredArgsConstructor
 public class LikeDbStorageImpl implements LikeDbStorage {
+
     private final JdbcTemplate jdbcTemplate;
     private final FilmDbStorage filmDbStorage;
-
-    @Autowired
-    public LikeDbStorageImpl(JdbcTemplate jdbcTemplate, FilmDbStorage filmDbStorage) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.filmDbStorage = filmDbStorage;
-    }
 
     @Override
     public boolean addLikeFilm(Integer filmId, Integer userId) {
