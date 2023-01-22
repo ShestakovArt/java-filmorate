@@ -6,10 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
-import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -24,6 +21,7 @@ import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
 @Slf4j
 public class FilmService {
     final FilmDbStorage filmDbStorage;
+    final UserService userService;
     final MpaService mpaService;
     final GenreService genreService;
     final DirectorService directorService;
@@ -32,12 +30,14 @@ public class FilmService {
     private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
 
     @Autowired
+
     public FilmService(FilmDbStorageImpl filmDbStorage,
-                       MpaService mpaService,
+                       UserService userService, MpaService mpaService,
                        GenreService genreService,
                        DirectorService directorService,
                        UserDbStorage userDbStorage) {
         this.filmDbStorage = filmDbStorage;
+        this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
         this.directorService = directorService;
@@ -175,5 +175,11 @@ public class FilmService {
             directorService.deleteFilmDirector(filmId, director.getId());
         }
         filmDbStorage.deleteFilm(filmId);
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        userService.getUser(userId);
+        userService.getUser(friendId);
+        return filmDbStorage.getCommonFilms(userId, friendId);
     }
 }
