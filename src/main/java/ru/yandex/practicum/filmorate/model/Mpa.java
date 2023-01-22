@@ -1,16 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
-import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.dao.MpaDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.MpaDbStorageImpl;
-import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
-public class Mpa{
+public class Mpa {
     public int id;
     public String name;
 
