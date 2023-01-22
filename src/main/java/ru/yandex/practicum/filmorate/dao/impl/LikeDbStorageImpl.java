@@ -29,7 +29,7 @@ public class LikeDbStorageImpl implements LikeDbStorage {
     @Override
     public boolean addLikeFilm(Integer filmId, Integer userId) {
         if (!findLikeUserToFilm(filmId, userId)) {
-            String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", filmId, userId);
+            String sqlQuery = String.format("MERGE INTO USER_LIKE_FILM VALUES (%d, %d)", filmId, userId);
             return jdbcTemplate.update(sqlQuery) == 1;
         }
         return false;
