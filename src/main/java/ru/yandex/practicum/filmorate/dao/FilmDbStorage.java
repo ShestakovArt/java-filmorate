@@ -31,5 +31,6 @@ public interface FilmDbStorage {
     Collection<Film> findFilmsByDirector(String criteria);
 
     Collection<Film> findFilmsByTitle(String criteria);
-
+    
+    List<Film> getCommonFilms(Integer userId, Integer friendId);
 }

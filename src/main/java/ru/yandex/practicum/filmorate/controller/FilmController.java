@@ -82,7 +82,7 @@ public class FilmController {
     @DeleteMapping(pathLikeFilm)
     public ResponseEntity deleteLikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
         filmService.deleteLikeFilm(id, userId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @GetMapping("/search")
@@ -97,5 +97,13 @@ public class FilmController {
     public ResponseEntity<Film> deleteFilm(@PathVariable int id){
         filmService.deleteFilm(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(
+            @RequestParam Integer userId,
+            @RequestParam Integer friendId
+    ) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 }
