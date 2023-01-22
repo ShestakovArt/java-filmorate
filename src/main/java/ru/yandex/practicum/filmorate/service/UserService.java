@@ -27,7 +27,6 @@ public class UserService {
 
     public User addUser(User user) {
         user.setId(userDbStorage.addUser(user));
-
         return user;
     }
 
@@ -38,7 +37,7 @@ public class UserService {
         List<User> tempUserFriends = getUserFriends(userId);
         if (tempUserFriends.size() > 0) {
             for (User user : tempUserFriends) {
-                deleteFriend(userId, user.getId());
+                userDbStorage.deleteFriends(userId, user.getId());
             }
         }
         userDbStorage.deleteUser(userId);

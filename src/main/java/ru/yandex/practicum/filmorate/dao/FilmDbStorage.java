@@ -20,11 +20,7 @@ public interface FilmDbStorage {
 
     boolean deleteFilm(Integer filmId);
 
-    boolean addLikeFilm(Integer filmId, Integer userId);
-
     List<Film> listMostPopularFilms(int limit);
-
-    boolean deleteLike(Integer filmId, Integer userId);
 
     Collection<Film> findDirectorSortedFilms(Integer directorId, String[] sortBy);
 

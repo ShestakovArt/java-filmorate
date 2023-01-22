@@ -26,22 +26,23 @@ public class FilmService {
     final GenreService genreService;
     final DirectorService directorService;
     final UserDbStorage userDbStorage;
+    final LikeService likeService;
 
     private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
 
     @Autowired
-
     public FilmService(FilmDbStorageImpl filmDbStorage,
                        UserService userService, MpaService mpaService,
                        GenreService genreService,
                        DirectorService directorService,
-                       UserDbStorage userDbStorage) {
+                       UserDbStorage userDbStorage, LikeService likeService) {
         this.filmDbStorage = filmDbStorage;
         this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
         this.directorService = directorService;
         this.userDbStorage = userDbStorage;
+        this.likeService = likeService;
     }
 
     public Film getFilm(Integer id) {
@@ -126,7 +127,7 @@ public class FilmService {
         if (userId < 1) {
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
-        if (!filmDbStorage.addLikeFilm(filmId, userId)) {
+        if (!likeService.addLikeFilm(filmId, userId)) {
             throw new IncorrectParameterException("Не удалось поставить лайк");
         } else {
             userDbStorage.recordEvent(userId, filmId, LIKE, ADD);
@@ -140,7 +141,7 @@ public class FilmService {
         if (userId < 1) {
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
         }
-        if (!filmDbStorage.deleteLike(filmId, userId)) {
+        if (!likeService.deleteLike(filmId, userId)) {
             throw new IncorrectParameterException("Не корректный запрос на удаление лайка");
         } else {
             userDbStorage.recordEvent(userId, filmId, LIKE, REMOVE);
@@ -174,6 +175,7 @@ public class FilmService {
         for (Director director : listFilmDirectors) {
             directorService.deleteFilmDirector(filmId, director.getId());
         }
+        likeService.deleteAllLikes(filmId);
         filmDbStorage.deleteFilm(filmId);
     }
 

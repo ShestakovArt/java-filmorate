@@ -68,10 +68,12 @@ create table IF NOT EXISTS `FILM_TO_GENRE`
     constraint FILM_TO_GENRE_GENRE_FK
         foreign key (GENRE_ID) references `GENRE`
 );
-create table IF NOT EXISTS `USER_LIKE_FILM`(
-    FILM_ID    INTEGER               not null,
-    USER_ID    INTEGER               not null,
-
+create table IF NOT EXISTS `USER_LIKE_FILM`
+(
+    FILM_ID INTEGER not null,
+    USER_ID INTEGER not null,
+    primary key (FILM_ID, USER_ID),
+    
     constraint USER_LIKE_FILM_USERS_ID_FK
         foreign key (USER_ID) references `USERS` (USER_ID),
     constraint USER_LIKE_FILM_FILMS_ID_FK

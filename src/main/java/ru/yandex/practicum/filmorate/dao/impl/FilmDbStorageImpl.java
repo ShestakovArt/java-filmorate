@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
 import ru.yandex.practicum.filmorate.dao.MpaDbStorage;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
@@ -29,19 +28,16 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     final MpaDbStorage mpaDbStorage;
     final GenreDbStorage genreDbStorage;
     final DirectorDbStorage directorDbStorage;
-    final UserDbStorageImpl userDbStorage;
 
     @Autowired
     public FilmDbStorageImpl(JdbcTemplate jdbcTemplate,
                              MpaDbStorage mpaDbStorage,
                              GenreDbStorage genreDbStorage,
-                             DirectorDbStorage directorDbStorage,
-                             UserDbStorageImpl userDbStorage) {
+                             DirectorDbStorage directorDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.mpaDbStorage = mpaDbStorage;
         this.genreDbStorage = genreDbStorage;
         this.directorDbStorage = directorDbStorage;
-        this.userDbStorage = userDbStorage;
     }
 
     private static final String findFilmsByDirectorsNameMatchesCriteria = "" +
@@ -50,6 +46,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
             "RIGHT JOIN DIRECTOR_TO_FILM dtf ON dtf.FILM_ID = f.FILM_ID " +
             "RIGHT JOIN DIRECTOR dir ON dir.DIRECTOR_ID = dtf.DIRECTOR_ID " +
             "WHERE LOWER(dir.DIRECTOR_NAME) LIKE LOWER(?)";
+
 
     private static final String findFilmsByTitleMatchesCriteria = "" +
             "SELECT f.FILM_ID, f.FILM_NAME, f.FILM_DESCRIPTION, " +
@@ -136,27 +133,16 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         List<Film> mostPopularFilms = new ArrayList<>();
         String sqlQuery = String.format("SELECT FILM_ID\n" +
                 " FROM FILMS ORDER BY FILM_RATE DESC LIMIT %d", limit);
-        List<Integer> listfilmIds = jdbcTemplate.queryForList(sqlQuery, Integer.class);
-        if (listfilmIds.size() < 1) {
+        List<Integer> listFilmsId = jdbcTemplate.queryForList(sqlQuery, Integer.class);
+        if (listFilmsId.size() < 1) {
             throw new IncorrectParameterException("Список популярных фильмов пуст");
         }
-        for (Integer id : listfilmIds) {
+        for (Integer id : listFilmsId) {
             mostPopularFilms.add(findFilm(id)
                     .orElseThrow(() -> new FilmNotFoundException("Фильм с идентификатором " + id + " не найден.")));
         }
 
         return mostPopularFilms;
-    }
-
-    @Override
-    public boolean deleteLike(Integer filmId, Integer userId) {
-        if (findLikeUserToFilm(filmId, userId)) {
-            String sqlQuery = "delete from USER_LIKE_FILM where FILM_ID = ? and USER_ID = ?";
-
-            return jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
-        }
-
-        return false;
     }
 
     @Override
@@ -166,15 +152,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "where FILM_ID = %d", filmId);
         jdbcTemplate.update(sqlQuery);
 
-        sqlQuery = String.format("delete\n" +
-                "from USER_LIKE_FILM\n" +
-                "where FILM_ID = %d", filmId);
-        jdbcTemplate.update(sqlQuery);
-
-        List<Director> filmDiretors = directorDbStorage.getFilmDirectors(filmId);
-        for (Director director : filmDiretors) {
-            directorDbStorage.deleteFilmDirector(filmId, director.getId());
-        }
+        // Удалить лайки
 
         sqlQuery = String.format("delete\n" +
                 "from FILMS\n" +
@@ -183,16 +161,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         return jdbcTemplate.update(sqlQuery) > 0;
     }
 
-    @Override
-    public boolean addLikeFilm(Integer filmId, Integer userId) {
-        if (!findLikeUserToFilm(filmId, userId)) {
-            String sqlQuery = String.format("INSERT INTO USER_LIKE_FILM VALUES (%d, %d)", filmId, userId);
-
-            return jdbcTemplate.update(sqlQuery) == 1;
-        }
-
-        return false;
-    }
 
     @Override
     public Collection<Film> findFilmsByDirector(String criteria) {
@@ -212,14 +180,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         );
     }
 
-    private boolean findLikeUserToFilm(Integer filmId, Integer userId) {
-        String sqlQuery = String.format("select COUNT(*)\n" +
-                "from USER_LIKE_FILM\n" +
-                "where FILM_ID = %d and USER_ID = %d", filmId, userId);
-
-        return jdbcTemplate.queryForObject(sqlQuery, Integer.class) == 1;
-    }
-
     private Integer getRateAndLikeFilm(Integer filmId) {
         String sqlQuery = String.format("select COUNT(*)\n" +
                 "from USER_LIKE_FILM\n" +
@@ -228,6 +188,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
 
         return countRateAndLike.get(0);
     }
+
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
         Film film = new Film();
@@ -263,8 +224,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "on first_user_likes.FILM_ID = second_user_likes.FILM_ID) " +
                 "order by FILM_RATE desc";
 
-        List<Film> commonFilms = jdbcTemplate.query(sql, this::mapRowToFilm, userId, friendId);
-
-        return commonFilms;
+        return jdbcTemplate.query(sql, this::mapRowToFilm, userId, friendId);
     }
 }
