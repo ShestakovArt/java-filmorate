@@ -8,10 +8,15 @@ import ru.yandex.practicum.filmorate.dao.impl.UserDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 
 
 import java.util.*;
+
+import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
+import static ru.yandex.practicum.filmorate.enums.EventOperation.REMOVE;
+import static ru.yandex.practicum.filmorate.enums.EventType.FRIEND;
 
 @Service
 public class UserService {
@@ -59,7 +64,12 @@ public class UserService {
             getUser(idFriend);
         }
 
-        return userDbStorage.addRequestsFriendship(userId, idFriend);
+        boolean resultOperation = userDbStorage.addRequestsFriendship(userId, idFriend);
+        if (resultOperation) {
+            userDbStorage.recordEvent(userId, idFriend, FRIEND, ADD);
+        }
+
+        return resultOperation;
     }
 
     public void deleteFriend(Integer userId, Integer idFriend) {
@@ -68,6 +78,8 @@ public class UserService {
         }
         if (!userDbStorage.deleteFriends(userId, idFriend)) {
             throw new IncorrectParameterException("Не удалось удалить пользователя из друзей");
+        } else {
+            userDbStorage.recordEvent(userId, idFriend, FRIEND, REMOVE);
         }
     }
 
@@ -102,5 +114,11 @@ public class UserService {
         return userDbStorage.findUser(id)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь с идентификатором " + id + " не найден."));
     }
-
+    
+    public Collection<Feed> getUserFeed(Integer userId) {
+        if (userId < 1) {
+            throw new UserNotFoundException("Id пользователя должно быть больше 0");
+        }
+        return userDbStorage.getFeed(userId);
+    }
 }

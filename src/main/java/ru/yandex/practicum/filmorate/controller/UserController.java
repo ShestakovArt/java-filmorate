@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -26,6 +27,7 @@ public class UserController {
     final String pathId = "/{id}";
     final String pathFriends = pathId + "/friends";
     final String pathRecommendations = pathId + "/recommendations";
+    final String pathFeed = pathId + "/feed";
     final String pathIdFriend = pathFriends + "/{friendId}";
 
     @Autowired
@@ -106,5 +108,9 @@ public class UserController {
     public ResponseEntity<List<Film>> getRecommendations(@PathVariable Integer id) {
         userService.getUser(id);
         return new ResponseEntity<>(recommendationService.getRecommendations(id), HttpStatus.OK);
+
+    @GetMapping(pathFeed)
+    public Collection<Feed> getFeed(@PathVariable int id) {
+        return userService.getUserFeed(id);
     }
 }

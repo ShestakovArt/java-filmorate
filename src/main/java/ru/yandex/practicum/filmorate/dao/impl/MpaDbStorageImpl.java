@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class MpaDbStorageImpl implements MpaDbStorage {
@@ -27,7 +26,7 @@ public class MpaDbStorageImpl implements MpaDbStorage {
                 "from MPA where MPA_ID = %d", id);
         List<String> nameList = jdbcTemplate.queryForList(sqlQuery, String.class);
 
-        if(nameList.size() != 1){
+        if (nameList.size() != 1) {
             throw new ValidationException("Не коректный ID MPA");
         }
 
