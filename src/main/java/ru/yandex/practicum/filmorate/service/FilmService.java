@@ -32,7 +32,7 @@ public class FilmService {
     @Autowired
 
     public FilmService(FilmDbStorageImpl filmDbStorage,
-                       MpaService mpaService,
+                       UserService userService, MpaService mpaService,
                        GenreService genreService,
                        DirectorService directorService,
                        UserDbStorage userDbStorage) {
