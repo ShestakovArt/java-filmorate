@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface LikeDbStorage {
+
     Map<Integer, Integer> getUsersCountOfLikedSameFilmsByUser(Integer userId);
 
     List<Film> getUserLikedFilms(Integer userId);
@@ -15,5 +16,4 @@ public interface LikeDbStorage {
     boolean deleteLike(Integer filmId, Integer userId);
 
     boolean deleteAllLikes(Integer filmId);
-
 }
