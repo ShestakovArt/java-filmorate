@@ -28,19 +28,16 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     final MpaDbStorage mpaDbStorage;
     final GenreDbStorage genreDbStorage;
     final DirectorDbStorage directorDbStorage;
-    final UserDbStorageImpl userDbStorage;
 
     @Autowired
     public FilmDbStorageImpl(JdbcTemplate jdbcTemplate,
                              MpaDbStorage mpaDbStorage,
                              GenreDbStorage genreDbStorage,
-                             DirectorDbStorage directorDbStorage,
-                             UserDbStorageImpl userDbStorage) {
+                             DirectorDbStorage directorDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.mpaDbStorage = mpaDbStorage;
         this.genreDbStorage = genreDbStorage;
         this.directorDbStorage = directorDbStorage;
-        this.userDbStorage = userDbStorage;
     }
 
     private static final String findFilmsByDirectorsNameMatchesCriteria = "" +
@@ -136,11 +133,11 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         List<Film> mostPopularFilms = new ArrayList<>();
         String sqlQuery = String.format("SELECT FILM_ID\n" +
                 " FROM FILMS ORDER BY FILM_RATE DESC LIMIT %d", limit);
-        List<Integer> listfilmIds = jdbcTemplate.queryForList(sqlQuery, Integer.class);
-        if (listfilmIds.size() < 1) {
+        List<Integer> listFilmsId = jdbcTemplate.queryForList(sqlQuery, Integer.class);
+        if (listFilmsId.size() < 1) {
             throw new IncorrectParameterException("Список популярных фильмов пуст");
         }
-        for (Integer id : listfilmIds) {
+        for (Integer id : listFilmsId) {
             mostPopularFilms.add(findFilm(id)
                     .orElseThrow(() -> new FilmNotFoundException("Фильм с идентификатором " + id + " не найден.")));
         }
@@ -227,7 +224,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "on first_user_likes.FILM_ID = second_user_likes.FILM_ID) " +
                 "order by FILM_RATE desc";
 
-        List<Film> commonFilms = jdbcTemplate.query(sql, this::mapRowToFilm, userId, friendId);
-        return commonFilms;
+        return jdbcTemplate.query(sql, this::mapRowToFilm, userId, friendId);
     }
 }

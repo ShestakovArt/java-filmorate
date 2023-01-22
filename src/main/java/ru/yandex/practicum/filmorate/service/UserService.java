@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.UserDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
@@ -20,12 +19,10 @@ import static ru.yandex.practicum.filmorate.enums.EventType.FRIEND;
 @Service
 public class UserService {
     final UserDbStorage userDbStorage;
-    final FilmDbStorage filmDbStorage;
 
     @Autowired
-    public UserService(UserDbStorageImpl userDbStorage, FilmDbStorage filmDbStorage) {
+    public UserService(UserDbStorageImpl userDbStorage) {
         this.userDbStorage = userDbStorage;
-        this.filmDbStorage = filmDbStorage;
     }
 
     public User addUser(User user) {
