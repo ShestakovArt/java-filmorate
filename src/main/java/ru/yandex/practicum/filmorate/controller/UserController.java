@@ -108,9 +108,11 @@ public class UserController {
     public ResponseEntity<List<Film>> getRecommendations(@PathVariable Integer id) {
         userService.getUser(id);
         return new ResponseEntity<>(recommendationService.getRecommendations(id), HttpStatus.OK);
+    }
 
     @GetMapping(pathFeed)
     public Collection<Feed> getFeed(@PathVariable int id) {
         return userService.getUserFeed(id);
     }
+
 }
