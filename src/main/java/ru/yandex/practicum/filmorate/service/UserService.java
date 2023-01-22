@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.UserDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -31,7 +30,6 @@ public class UserService {
 
     public User addUser(User user) {
         user.setId(userDbStorage.addUser(user));
-
         return user;
     }
 
@@ -42,7 +40,7 @@ public class UserService {
         List<User> tempUserFriends = getUserFriends(userId);
         if (tempUserFriends.size() > 0) {
             for (User user : tempUserFriends) {
-                deleteFriend(userId, user.getId());
+                userDbStorage.deleteFriends(userId, user.getId());
             }
         }
         userDbStorage.deleteUser(userId);
@@ -114,7 +112,7 @@ public class UserService {
         return userDbStorage.findUser(id)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь с идентификатором " + id + " не найден."));
     }
-    
+
     public Collection<Feed> getUserFeed(Integer userId) {
         if (userId < 1) {
             throw new UserNotFoundException("Id пользователя должно быть больше 0");
