@@ -26,13 +26,13 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    final UserService userService;
-    final RecommendationService recommendationService;
-    final String pathId = "/{id}";
-    final String pathFriends = pathId + "/friends";
-    final String pathRecommendations = pathId + "/recommendations";
-    final String pathFeed = pathId + "/feed";
-    final String pathIdFriend = pathFriends + "/{friendId}";
+    private final UserService userService;
+    private final RecommendationService recommendationService;
+    private final String pathId = "/{id}";
+    private final String pathFriends = pathId + "/friends";
+    private final String pathRecommendations = pathId + "/recommendations";
+    private final String pathFeed = pathId + "/feed";
+    private final String pathIdFriend = pathFriends + "/{friendId}";
 
     @GetMapping()
     public Collection<User> getUsers() {
@@ -112,5 +112,4 @@ public class UserController {
     public Collection<Feed> getFeed(@PathVariable int id) {
         return userService.getUserFeed(id);
     }
-
 }

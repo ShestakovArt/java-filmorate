@@ -19,8 +19,8 @@ import java.util.Collection;
 @RequestMapping("/mpa")
 public class MpaController {
 
-    final MpaService mpaService;
-    final String pathId = "/{id}";
+    private final MpaService mpaService;
+    private final String pathId = "/{id}";
 
     @GetMapping()
     public Collection<Mpa> getMpaList() {
