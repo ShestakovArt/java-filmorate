@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,16 +17,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-@Slf4j
 @Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
 
-    final FilmService filmService;
-    final String pathId = "/{id}";
-    final String pathLikeFilm = pathId + "/like/{userId}";
+    private final FilmService filmService;
+    private final String pathId = "/{id}";
+    private final String pathLikeFilm = pathId + "/like/{userId}";
+    private static final String DEFAULT_POPULAR_COUNT = "10";
 
     @GetMapping()
     public Collection<Film> getFilms() {
@@ -66,11 +64,12 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public ResponseEntity<List<Film>> getPopularFilms(@RequestParam(required = false) Integer count) {
-        if (count == null) {
-            count = 10;
-        }
-        return new ResponseEntity<>(filmService.getMostPopularMoviesOfLikes(count), HttpStatus.OK);
+    public ResponseEntity<List<Film>> getPopularFilms(
+            @RequestParam(required = false, defaultValue = DEFAULT_POPULAR_COUNT) Integer count,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year
+    ) {
+        return new ResponseEntity<>(filmService.getMostPopularMoviesOfLikes(count, genreId, year), HttpStatus.OK);
     }
 
     @PutMapping(pathLikeFilm)
@@ -92,9 +91,9 @@ public class FilmController {
     ) {
         return filmService.findFilmsByCriteria(criteria, params);
     }
-  
+
     @DeleteMapping(pathId)
-    public ResponseEntity<Film> deleteFilm(@PathVariable int id){
+    public ResponseEntity<Film> deleteFilm(@PathVariable int id) {
         filmService.deleteFilm(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

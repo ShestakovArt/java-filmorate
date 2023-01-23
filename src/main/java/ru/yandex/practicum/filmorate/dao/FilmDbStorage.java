@@ -18,7 +18,7 @@ public interface FilmDbStorage {
 
     boolean deleteFilm(Integer filmId);
 
-    List<Film> listMostPopularFilms(int limit);
+    List<Film> listMostPopularFilms(Integer limit, Integer genreId, Integer year);
 
     Collection<Film> findDirectorSortedFilms(Integer directorId, String[] sortBy);
 

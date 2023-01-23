@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
@@ -24,15 +25,16 @@ import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
 @RequiredArgsConstructor
 public class FilmService {
 
-    final FilmDbStorage filmDbStorage;
-    final UserService userService;
-    final MpaService mpaService;
-    final GenreService genreService;
-    final DirectorService directorService;
-    final UserDbStorage userDbStorage;
-    final LikeService likeService;
+    private final FilmDbStorage filmDbStorage;
+    private final UserService userService;
+    private final MpaService mpaService;
+    private final GenreService genreService;
+    private final DirectorService directorService;
+    private final UserDbStorage userDbStorage;
+    private final LikeService likeService;
 
     private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
+    private static final int EARLIEST_RELEASE_DATE = 1895;
 
     public Film getFilm(Integer id) {
         return filmDbStorage.findFilm(id)
@@ -137,12 +139,16 @@ public class FilmService {
         }
     }
 
-    public List<Film> getMostPopularMoviesOfLikes(Integer count) {
-        if (count < 1) {
-            throw new IncorrectParameterException("Значение count должно быть больше 0");
+    public List<Film> getMostPopularMoviesOfLikes(Integer count, Integer genreId, Integer year) {
+        if (genreId != null) {
+            genreService.getGenre(genreId);
         }
-
-        return filmDbStorage.listMostPopularFilms(count);
+        if (year != null) {
+            if (year < EARLIEST_RELEASE_DATE || year > LocalDate.now().getYear()) {
+                throw new IncorrectParameterException("Year must be any int from 1895 till current year or absent.");
+            }
+        }
+        return filmDbStorage.listMostPopularFilms(count, genreId, year);
     }
 
     public Collection<Film> findFilmsByCriteria(String criteria, Set<String> params) {
