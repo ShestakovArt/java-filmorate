@@ -6,7 +6,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
@@ -29,8 +28,7 @@ public class GenreDbStorageImpl implements GenreDbStorage {
             String sqlQuery = "select GENRE_ID, GENRE_NAME from GENRE where GENRE_ID = ?";
             return Optional.of(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, id)).get();
         } catch (EmptyResultDataAccessException e) {
-            log.info("Не коректный ID GENRE");
-            throw new ValidationException("Не коректный ID GENRE");
+            return null;
         }
     }
 
