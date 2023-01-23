@@ -11,7 +11,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class MpaService {
 
-    final MpaDbStorage mpaDbStorage;
+    private final MpaDbStorage mpaDbStorage;
 
     public Collection<Mpa> getMpaList() {
         return mpaDbStorage.findAll();

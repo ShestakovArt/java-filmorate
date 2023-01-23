@@ -18,7 +18,7 @@ import static ru.yandex.practicum.filmorate.enums.EventType.FRIEND;
 @RequiredArgsConstructor
 public class UserService {
 
-    final UserDbStorage userDbStorage;
+    private final UserDbStorage userDbStorage;
 
     public User addUser(User user) {
         user.setId(userDbStorage.addUser(user));

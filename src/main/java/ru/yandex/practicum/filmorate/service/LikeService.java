@@ -12,7 +12,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class LikeService {
 
-    final LikeDbStorage likeDbStorage;
+    private final LikeDbStorage likeDbStorage;
 
     public boolean addLikeFilm(Integer filmId, Integer userId) {
         return likeDbStorage.addLikeFilm(filmId, userId);

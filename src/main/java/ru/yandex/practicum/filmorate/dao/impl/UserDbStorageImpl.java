@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -17,7 +16,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
-@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class UserDbStorageImpl implements UserDbStorage {
