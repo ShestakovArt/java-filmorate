@@ -115,8 +115,8 @@ public class FilmIntegrationTests {
     public void testSetGenreFilm() {
         assertTrue(genreDbStorage.setFilmGenre(1, 1), "Жанр фильма не изменился");
         List<Genre> genres = new ArrayList<>();
-        genres.add(genreDbStorage.findGenreById(2));
         genres.add(genreDbStorage.findGenreById(1));
+        genres.add(genreDbStorage.findGenreById(2));
         Optional<Film> filmOptional = filmDbStorage.findFilm(1);
 
         assertThat(filmOptional)
@@ -170,7 +170,7 @@ public class FilmIntegrationTests {
     @Test
     public void testListMostPopularFilms() {
         likeDbStorage.addLikeFilm(1, 1);
-        List<Film> filmList = filmDbStorage.listMostPopularFilms(1);
+        List<Film> filmList = filmDbStorage.listMostPopularFilms(1, null, null);
         assertTrue(filmList.size() == 1, "Размер списка фильмов не соответсвует");
         Optional<Film> filmOptional = filmDbStorage.findFilm(1);
 
@@ -180,7 +180,7 @@ public class FilmIntegrationTests {
                         assertThat(film).hasFieldOrPropertyWithValue("rate", film.getRate())
                 );
 
-        filmList = filmDbStorage.listMostPopularFilms(2);
+        filmList = filmDbStorage.listMostPopularFilms(2, null, null);
         assertTrue(filmList.size() == 2, "Размер списка фильмов не соответсвует");
         filmOptional = filmDbStorage.findFilm(2);
 
