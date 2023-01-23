@@ -15,6 +15,6 @@ public class FilmorateApplication {
 
     @PostConstruct
     public void init() {
-        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Yekaterinburg"));
     }
 }
