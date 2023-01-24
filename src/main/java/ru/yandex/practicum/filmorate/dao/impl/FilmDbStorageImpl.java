@@ -1,44 +1,33 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
 import ru.yandex.practicum.filmorate.dao.MpaDbStorage;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-@Component
 @Slf4j
+@Repository
+@RequiredArgsConstructor
 public class FilmDbStorageImpl implements FilmDbStorage {
-    private final JdbcTemplate jdbcTemplate;
-    final MpaDbStorage mpaDbStorage;
-    final GenreDbStorage genreDbStorage;
-    final DirectorDbStorage directorDbStorage;
 
-    @Autowired
-    public FilmDbStorageImpl(JdbcTemplate jdbcTemplate,
-                             MpaDbStorage mpaDbStorage,
-                             GenreDbStorage genreDbStorage,
-                             DirectorDbStorage directorDbStorage) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.mpaDbStorage = mpaDbStorage;
-        this.genreDbStorage = genreDbStorage;
-        this.directorDbStorage = directorDbStorage;
-    }
+    private final JdbcTemplate jdbcTemplate;
+    private final MpaDbStorage mpaDbStorage;
+    private final GenreDbStorage genreDbStorage;
+    private final DirectorDbStorage directorDbStorage;
 
     private static final String findFilmsByDirectorsNameMatchesCriteria = "" +
             "SELECT f.FILM_ID, f.FILM_NAME, f.FILM_DESCRIPTION, f.FILM_RELEASE_DATE, " +
@@ -115,34 +104,37 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     @Override
-    public List<Film> listMostPopularFilms(int limit) {
-        Collection<Film> listAllFilms = findAll();
-        for (Film film : listAllFilms) {
-            String sqlQueryFindLike = String.format("" +
-                    "SELECT COUNT(*)\n" +
-                    "FROM USER_LIKE_FILM\n" +
-                    "WHERE FILM_ID = %d", film.getId());
-            List<Integer> countLikeToFilm = jdbcTemplate.queryForList(sqlQueryFindLike, Integer.class);
-            String sqlQueryUpdateFilm = "update FILMS set " +
-                    "FILM_RATE = ? " +
-                    "where FILM_ID = ?";
-            jdbcTemplate.update(sqlQueryUpdateFilm
-                    , countLikeToFilm.get(0)
-                    , film.getId());
+    public List<Film> listMostPopularFilms(Integer limit, Integer genreId, Integer year) {
+        StringBuilder sqlQueryBuilder = new StringBuilder();
+        sqlQueryBuilder
+                .append("SELECT f.FILM_ID, f.FILM_NAME, f.FILM_DESCRIPTION, f.FILM_RELEASE_DATE, ")
+                .append("f.FILM_DURATION, f.FILM_RATE, f.MPA_ID, COUNT(ul.USER_ID) AS LIKES_COUNT FROM FILMS f ")
+                .append("LEFT JOIN USER_LIKE_FILM ul ON ul.FILM_ID = f.FILM_ID ");
+        if (genreId != null && year != null) {
+            sqlQueryBuilder
+                    .append("RIGHT JOIN FILM_TO_GENRE fg ON fg.FILM_ID = f.FILM_ID ")
+                    .append("WHERE fg.GENRE_ID = ")
+                    .append(genreId)
+                    .append(" AND EXTRACT(YEAR FROM f.FILM_RELEASE_DATE) = ")
+                    .append(year)
+                    .append(' ');
+        } else if (genreId != null) {
+            sqlQueryBuilder
+                    .append("RIGHT JOIN FILM_TO_GENRE fg ON fg.FILM_ID = f.FILM_ID ")
+                    .append("WHERE fg.GENRE_ID = ")
+                    .append(genreId)
+                    .append(' ');
+        } else if (year != null) {
+            sqlQueryBuilder
+                    .append("WHERE EXTRACT(YEAR FROM f.FILM_RELEASE_DATE) = ")
+                    .append(year)
+                    .append(' ');
         }
-        List<Film> mostPopularFilms = new ArrayList<>();
-        String sqlQuery = String.format("SELECT FILM_ID\n" +
-                " FROM FILMS ORDER BY FILM_RATE DESC LIMIT %d", limit);
-        List<Integer> listFilmsId = jdbcTemplate.queryForList(sqlQuery, Integer.class);
-        if (listFilmsId.size() < 1) {
-            throw new IncorrectParameterException("Список популярных фильмов пуст");
-        }
-        for (Integer id : listFilmsId) {
-            mostPopularFilms.add(findFilm(id)
-                    .orElseThrow(() -> new FilmNotFoundException("Фильм с идентификатором " + id + " не найден.")));
-        }
+        sqlQueryBuilder
+                .append("GROUP BY f.FILM_ID ORDER BY LIKES_COUNT DESC LIMIT ")
+                .append(limit);
 
-        return mostPopularFilms;
+        return new LinkedList<>(jdbcTemplate.query(sqlQueryBuilder.toString(), this::mapRowToFilm));
     }
 
     @Override

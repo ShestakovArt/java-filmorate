@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.validator.BirthdayValid;
 
@@ -12,9 +13,9 @@ import java.util.Map;
 
 @Data
 @BirthdayValid
-@FieldDefaults(level= AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
-    int id;
+    Integer id;
     @NotBlank(message = "Электронная почта не может быть пустой")
     @Email(message = "Электронная почта должна содержать символ @")
     String email;
@@ -27,9 +28,9 @@ public class User {
     public User(String email, String login, String name, String birthday) {
         this.email = email;
         this.login = login;
-        if(name == null || name.isEmpty() || name.isBlank()){
+        if (name == null || name.isEmpty() || name.isBlank()) {
             this.name = login;
-        } else{
+        } else {
             this.name = name;
         }
         this.birthday = birthday;

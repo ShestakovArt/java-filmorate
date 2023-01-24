@@ -6,10 +6,10 @@ import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.ReviewDbLikeStorage;
 import ru.yandex.practicum.filmorate.dao.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
+import ru.yandex.practicum.filmorate.enums.LikeStatus;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.enums.LikeStatus;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
@@ -20,6 +20,7 @@ import static ru.yandex.practicum.filmorate.enums.EventType.REVIEW;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+
     private final ReviewDbStorage reviewStorage;
     private final ReviewDbLikeStorage reviewLikeStorage;
     private final UserDbStorage userStorage;
@@ -97,5 +98,4 @@ public class ReviewService {
             throw new UserNotFoundException("Отзыв с таким идентификатором не найден.");
         }
     }
-
 }

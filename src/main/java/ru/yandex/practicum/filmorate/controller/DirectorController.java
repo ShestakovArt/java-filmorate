@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,16 +11,13 @@ import ru.yandex.practicum.filmorate.service.DirectorService;
 import javax.validation.Valid;
 import java.util.Collection;
 
-@RestController
-@RequestMapping(value = "/directors")
 @Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping(value = "/directors")
 public class DirectorController {
-    private final DirectorService directorService;
 
-    @Autowired
-    public DirectorController(DirectorService directorService) {
-        this.directorService = directorService;
-    }
+    private final DirectorService directorService;
 
     @GetMapping
     public Collection<Director> getDirectors() {

@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.enums.EventOperation;
 import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.model.Feed;
@@ -10,8 +9,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@Component
 public interface UserDbStorage {
+
     int addUser(User user);
 
     void upgradeUser(User user);

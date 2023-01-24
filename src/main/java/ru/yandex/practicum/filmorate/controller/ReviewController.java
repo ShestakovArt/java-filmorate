@@ -13,6 +13,7 @@ import java.util.List;
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
+
     private final ReviewService reviewService;
 
     @GetMapping
@@ -69,5 +70,4 @@ public class ReviewController {
             @PathVariable("userId") Integer userId) {
         reviewService.removeLike(reviewId, userId, LikeStatus.DISLIKE);
     }
-
 }

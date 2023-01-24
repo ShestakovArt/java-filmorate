@@ -1,15 +1,13 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-
-@Component
 public interface FilmDbStorage {
+
     int addFilm(Film film);
 
     void upgradeFilm(Film film);
@@ -20,7 +18,7 @@ public interface FilmDbStorage {
 
     boolean deleteFilm(Integer filmId);
 
-    List<Film> listMostPopularFilms(int limit);
+    List<Film> listMostPopularFilms(Integer limit, Integer genreId, Integer year);
 
     Collection<Film> findDirectorSortedFilms(Integer directorId, String[] sortBy);
 

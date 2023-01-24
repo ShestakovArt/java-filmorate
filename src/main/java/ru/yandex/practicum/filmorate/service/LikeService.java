@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.LikeDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -10,14 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@Slf4j
+@RequiredArgsConstructor
 public class LikeService {
-    final LikeDbStorage likeDbStorage;
 
-    @Autowired
-    public LikeService(LikeDbStorage likeDbStorage) {
-        this.likeDbStorage = likeDbStorage;
-    }
+    private final LikeDbStorage likeDbStorage;
 
     public boolean addLikeFilm(Integer filmId, Integer userId) {
         return likeDbStorage.addLikeFilm(filmId, userId);
@@ -38,5 +33,4 @@ public class LikeService {
     public Map<Integer, Integer> getUsersCountOfLikedSameFilmsByUser(Integer userId) {
         return likeDbStorage.getUsersCountOfLikedSameFilmsByUser(userId);
     }
-
 }

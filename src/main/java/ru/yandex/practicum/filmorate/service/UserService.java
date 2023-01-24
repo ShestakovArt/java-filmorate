@@ -1,14 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.UserDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
-
 
 import java.util.*;
 
@@ -17,13 +15,10 @@ import static ru.yandex.practicum.filmorate.enums.EventOperation.REMOVE;
 import static ru.yandex.practicum.filmorate.enums.EventType.FRIEND;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    final UserDbStorage userDbStorage;
 
-    @Autowired
-    public UserService(UserDbStorageImpl userDbStorage) {
-        this.userDbStorage = userDbStorage;
-    }
+    private final UserDbStorage userDbStorage;
 
     public User addUser(User user) {
         user.setId(userDbStorage.addUser(user));

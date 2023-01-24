@@ -1,49 +1,40 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
-import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static ru.yandex.practicum.filmorate.enums.EventOperation.ADD;
 import static ru.yandex.practicum.filmorate.enums.EventOperation.REMOVE;
 import static ru.yandex.practicum.filmorate.enums.EventType.LIKE;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class FilmService {
-    final FilmDbStorage filmDbStorage;
-    final UserService userService;
-    final MpaService mpaService;
-    final GenreService genreService;
-    final DirectorService directorService;
-    final UserDbStorage userDbStorage;
-    final LikeService likeService;
+
+    private final FilmDbStorage filmDbStorage;
+    private final UserService userService;
+    private final MpaService mpaService;
+    private final GenreService genreService;
+    private final DirectorService directorService;
+    private final UserDbStorage userDbStorage;
+    private final LikeService likeService;
 
     private static final Comparator<Film> filmPopularityComparator = Comparator.comparing(Film::getRate).reversed();
-
-    @Autowired
-    public FilmService(FilmDbStorageImpl filmDbStorage,
-                       UserService userService, MpaService mpaService,
-                       GenreService genreService,
-                       DirectorService directorService,
-                       UserDbStorage userDbStorage, LikeService likeService) {
-        this.filmDbStorage = filmDbStorage;
-        this.userService = userService;
-        this.mpaService = mpaService;
-        this.genreService = genreService;
-        this.directorService = directorService;
-        this.userDbStorage = userDbStorage;
-        this.likeService = likeService;
-    }
+    private static final int EARLIEST_RELEASE_DATE = 1895;
 
     public Film getFilm(Integer id) {
         return filmDbStorage.findFilm(id)
@@ -148,12 +139,16 @@ public class FilmService {
         }
     }
 
-    public List<Film> getMostPopularMoviesOfLikes(Integer count) {
-        if (count < 1) {
-            throw new IncorrectParameterException("Значение count должно быть больше 0");
+    public List<Film> getMostPopularMoviesOfLikes(Integer count, Integer genreId, Integer year) {
+        if (genreId != null) {
+            genreService.getGenre(genreId);
         }
-
-        return filmDbStorage.listMostPopularFilms(count);
+        if (year != null) {
+            if (year < EARLIEST_RELEASE_DATE || year > LocalDate.now().getYear()) {
+                throw new IncorrectParameterException("Year must be any int from 1895 till current year or absent.");
+            }
+        }
+        return filmDbStorage.listMostPopularFilms(count, genreId, year);
     }
 
     public Collection<Film> findFilmsByCriteria(String criteria, Set<String> params) {

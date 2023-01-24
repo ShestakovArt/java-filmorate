@@ -9,7 +9,10 @@ import ru.yandex.practicum.filmorate.validator.ReleaseDateValid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @ReleaseDateValid
@@ -17,7 +20,7 @@ import java.util.*;
 @NoArgsConstructor
 public class Film {
 
-    int id;
+    Integer id;
     @NotBlank(message = "Название не может быть пустым")
     String name;
     @Size(max = 200, message = "Максимальная длина описания — 200 символов")

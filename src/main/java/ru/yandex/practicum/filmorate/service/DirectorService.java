@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
@@ -13,15 +13,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class DirectorService {
-    private final DirectorDbStorage directorDbStorage;
 
-    @Autowired
-    public DirectorService(DirectorDbStorage directorDbStorage) {
-        this.directorDbStorage = directorDbStorage;
-    }
+    private final DirectorDbStorage directorDbStorage;
 
     public Director add(Director director) {
         director.setId(directorDbStorage.add(director));
