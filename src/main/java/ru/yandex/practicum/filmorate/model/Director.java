@@ -11,7 +11,8 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 public class Director {
-    int id;
+
+    Integer id;
 
     @NotNull(message = "name should not be null")
     @NotBlank(message = "name should not be blank")

@@ -1,19 +1,18 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
+@AllArgsConstructor
 public class Genre {
-    int id;
-    String name;
 
-    public Genre(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
+    Integer id;
+
+    String name;
 
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
