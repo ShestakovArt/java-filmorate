@@ -19,14 +19,17 @@ Template repository for Filmorate project.
 Пример:
 
 ```sql
-SELECT u.Name,
-       f.Name
-FROM Users AS u
-         LEFT OUTER JOIN UsersMovieLibrary AS mv
-                         ON mv.FilmID = u.UserID
-         LEFT OUTER JOIN Films AS f
-                         ON f.FilmID = mv.FilmID
-WHERE u.UserID = 'ID user'
+SELECT f.FILM_ID,
+       f.FILM_NAME,
+       f.FILM_DESCRIPTION,
+       f.FILM_RELEASE_DATE,
+       f.FILM_DURATION,
+       f.FILM_RATE,
+       f.MPA_ID
+FROM FILMS f
+         RIGHT JOIN DIRECTOR_TO_FILM dtf ON dtf.FILM_ID = f.FILM_ID
+         RIGHT JOIN DIRECTOR dir ON dir.DIRECTOR_ID = dtf.DIRECTOR_ID
+WHERE LOWER(dir.DIRECTOR_NAME) LIKE LOWER(?)
 ```
 
 ### Технологический стек
