@@ -9,7 +9,7 @@ import java.util.Set;
 public class SearchParamsValidator implements ConstraintValidator<SearchParamsValid, Set<String>> {
 
     private static final Set<String> validSet = Set.of("director", "title");
-    private static final String ERROR_MES = "Search params must be 'director' and/or 'title'";
+    private static final String ERROR_MES = "Возможен поиск только по 'режиссеру', либо по 'названию'";
 
     @Override
     public void initialize(SearchParamsValid constraintAnnotation) {
