@@ -1,30 +1,41 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.relational.core.sql.In;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.GenreDbStorage;
-import ru.yandex.practicum.filmorate.dao.impl.GenreDbStorageImpl;
+import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class GenreService {
-    final GenreDbStorage genreDbStorage;
 
-    @Autowired
-    public GenreService(GenreDbStorageImpl genreDbStorage){
-        this.genreDbStorage = genreDbStorage;
-    }
+    private final GenreDbStorage genreDbStorage;
 
-    public Collection<Genre> getGenreList(){
+    public Collection<Genre> getGenreList() {
         return genreDbStorage.findAll();
     }
 
-    public Genre getGenre(Integer id){
-        return new Genre(id, genreDbStorage.findNameGenre(id));
+    public Genre getGenre(Integer id) {
+        Genre foundGenre = genreDbStorage.findGenreById(id);
+        if (foundGenre == null) {
+            throw new GenreNotFoundException(id);
+        }
+        return foundGenre;
+    }
+
+    public boolean setFilmGenre(Integer filmId, Integer idGenre) {
+        return genreDbStorage.setFilmGenre(filmId, idGenre);
+    }
+
+    public boolean deleteFilmGenre(Integer filmId, Integer idGenre) {
+        return genreDbStorage.deleteFilmGenre(filmId, idGenre);
+    }
+
+    public List<Genre> getFilmGenres(Integer filmId) {
+        return genreDbStorage.getFilmGenres(filmId);
     }
 }

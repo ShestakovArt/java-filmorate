@@ -109,13 +109,13 @@ public class UserIntegrationTests {
 
     }
 
-    void checkFindUserById(Integer idUser){
-        Optional<User> userOptional = userStorage.findUser(idUser);
+    void checkFindUserById(Integer userId){
+        Optional<User> userOptional = userStorage.findUser(userId);
 
         assertThat(userOptional)
                 .isPresent()
                 .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("id", idUser)
+                        assertThat(user).hasFieldOrPropertyWithValue("id", userId)
                 );
     }
 }
